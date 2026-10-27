@@ -1,0 +1,24 @@
+{
+  "name": "مساعدي الغذائي",
+  "short_name": "مساعدي الغذائي",
+  "description": "تسجيل الوجبات ومتابعة السعرات والمغذيات",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f6ef",
+  "theme_color": "#f5f6ef",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
