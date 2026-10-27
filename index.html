@@ -220,6 +220,19 @@
         throw new Error(detail);
       }
       const a=data.answer||{};
+            // محاولة حساب القيم محليًا عند كتابة طعام معروف ووزنه بالغرام
+      const descriptionNormalized = description
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ة/g, 'ه');
+
+      const gramsMatch = descriptionNormalized.match(/(\d+(?:\.\d+)?)\s*(?:غرام|غ|جرام|g)\b/i);
+      const grams = gramsMatch ? Number(gramsMatch[1]) : null;
+
+      let localFood = null;
+
+      if (grams) {
+        localFood = calculateLocalFood(descriptionNormalized, grams);
+      }
       latestFoodSuggestion={
         name:String(a.portion||description).trim()||description,
         description,
