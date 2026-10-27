@@ -136,6 +136,56 @@
   $('foodPhoto').addEventListener('change',e=>{const f=e.target.files[0];if(!f){$('photoPreview').classList.add('hidden');photoDataUrl='';return}const reader=new FileReader();reader.onload=()=>{photoDataUrl=reader.result;$('photoPreview').src=photoDataUrl;$('photoPreview').classList.remove('hidden')};reader.readAsDataURL(f)});
   const FOOD_ASSISTANT_ENDPOINT='https://food-assistant-ai.mohammedtareqabugosh.workers.dev/ask';
   let latestFoodSuggestion=null;
+    // قاعدة غذائية محلية: قيم تقريبية لكل 100 غرام
+  const LOCAL_FOODS = [
+    { names:['بيض','البيض','بيضة','بيضتين','بيض مسلوق','بيض مقلي'], kcal:155, protein:12.6, carbs:1.1, fat:10.6 },
+    { names:['صدر دجاج','دجاج مشوي','دجاج مطبوخ','دجاج بدون جلد'], kcal:165, protein:31, carbs:0, fat:3.6 },
+    { names:['رز مطبوخ','أرز مطبوخ','رز أبيض مطبوخ','أرز أبيض مطبوخ'], kcal:130, protein:2.7, carbs:28.2, fat:0.3 },
+    { names:['خبز عربي','خبز بلدي','خبز عربي أبيض','رغيف خبز'], kcal:275, protein:9, carbs:55, fat:1.5 },
+    { names:['زيت زيتون','زيت الزيتون'], kcal:884, protein:0, carbs:0, fat:100 },
+    { names:['خيار','الخيار'], kcal:15, protein:0.7, carbs:3.6, fat:0.1 },
+    { names:['بندورة','طماطم','البندورة'], kcal:18, protein:0.9, carbs:3.9, fat:0.2 },
+    { names:['موز','موزة'], kcal:89, protein:1.1, carbs:22.8, fat:0.3 },
+    { names:['تفاح','تفاحة'], kcal:52, protein:0.3, carbs:13.8, fat:0.2 },
+    { names:['لبن','زبادي','لبن رائب'], kcal:61, protein:3.5, carbs:4.7, fat:3.3 }
+  ];
+
+  // حساب القيم من وزن محدد، إذا طابق الطعام قاعدة البيانات
+  function calculateLocalFood(foodName, grams) {
+    const normalized = String(foodName || '')
+      .toLowerCase()
+      .replace(/[أإآ]/g, 'ا')
+      .replace(/ة/g, 'ه')
+      .trim();
+
+    const food = LOCAL_FOODS
+      .filter(item => item.names.some(name => {
+        const n = name.toLowerCase()
+          .replace(/[أإآ]/g, 'ا')
+          .replace(/ة/g, 'ه');
+        return normalized.includes(n) || n.includes(normalized);
+      }))
+      .sort((a, b) => {
+        const longestA = Math.max(...a.names.map(n => n.length));
+        const longestB = Math.max(...b.names.map(n => n.length));
+        return longestB - longestA;
+      })[0];
+
+    if (!food || !Number.isFinite(Number(grams)) || Number(grams) <= 0) {
+      return null;
+    }
+
+    const factor = Number(grams) / 100;
+
+    return {
+      name: foodName,
+      grams: Number(grams),
+      calories: Math.round(food.kcal * factor),
+      protein: Math.round(food.protein * factor * 10) / 10,
+      carbs: Math.round(food.carbs * factor * 10) / 10,
+      fat: Math.round(food.fat * factor * 10) / 10
+    };
+  }
   function setAssistantMessage(message){$('assistantOutput').textContent=message;}
   $('prepareAnalysis').addEventListener('click',async()=>{
     const description=$('foodDescription').value.trim();
