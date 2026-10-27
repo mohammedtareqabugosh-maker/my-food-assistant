@@ -75,8 +75,8 @@
   </section>
 
   <section id="assistant" class="section">
-    <div class="intro"><small>مساعدك الغذائي</small><h2>حلّل وجبتك ✨</h2><p>اكتب وصف الوجبة أو جهّز صورة لمراجعتها. التحليل الذكي الفعلي يحتاج اتصالًا آمنًا بخادم API، ولم يُفعّل بعد.</p></div>
-    <div class="card"><div class="field"><label for="foodDescription">ماذا أكلت؟</label><textarea id="foodDescription" placeholder="مثال: أكلت 200 غرام دجاج و150 غرام رز مطبوخ"></textarea></div><div class="field" style="margin-top:12px"><label for="foodPhoto">صوّر الوجبة أو اختر صورة</label><input id="foodPhoto" type="file" accept="image/*" capture="environment"></div><img id="photoPreview" class="preview hidden" alt="معاينة صورة الوجبة"><div class="actions"><button class="btn" id="prepareAnalysis" type="button">تجهيز الوصف للمراجعة</button></div><div class="chatbox" id="assistantOutput" style="margin-top:14px">بعد تجهيز المراجعة، ستتمكن من نقل المعلومات إلى نموذج تسجيل الوجبة. لن يتم الحفظ تلقائيًا.</div><div class="notice">تنبيه: اختيار صورة هنا يعرضها لك فقط ولا يرسلها لأي جهة. لن ندّعي أن الذكاء الاصطناعي حلّل الصورة قبل إعداد الخدمة واختبارها.</div></div>
+    <div class="intro"><small>مساعدك الغذائي</small><h2>اسأل مساعدك الذكي ✨</h2><p>اكتب اسم الوجبة أو ما تفكر بأكله، وسيأخذ المساعد وجبات اليوم المسجّلة بالحسبان ويقترح كمية وقيمًا تقديرية.</p></div>
+    <div class="card"><div class="field"><label for="foodDescription">شو ناوي تأكل أو شو أكلت؟</label><textarea id="foodDescription" placeholder="مثال: ناوي آكل دجاج مشوي مع رز وسلطة، شو الكمية المناسبة؟"></textarea></div><div class="field" style="margin-top:12px"><label for="foodPhoto">صورة الوجبة (للمعاينة فقط حاليًا)</label><input id="foodPhoto" type="file" accept="image/*" capture="environment"></div><img id="photoPreview" class="preview hidden" alt="معاينة صورة الوجبة"><div class="actions"><button class="btn" id="prepareAnalysis" type="button">اسأل المساعد الذكي</button><button class="btn outline" id="clearAssistant" type="button">مسح</button></div><div class="chatbox" id="assistantOutput" style="margin-top:14px">اكتب وصف الوجبة واضغط «اسأل المساعد الذكي». لن تُحفظ أي وجبة من دون موافقتك.</div><div id="assistantActions" class="actions hidden"><button class="btn light" id="useSuggestion" type="button">استخدام الاقتراح وتعبئة نموذج الوجبة</button></div><div class="notice">القيم الغذائية تقديرية وتعتمد على الوصف والكمية. الصورة لا تُرسل للخادم ولا تُحلّل في هذه النسخة. لن تُحفظ الوجبة تلقائيًا؛ زر الاقتراح ينقلك إلى نموذج المراجعة فقط.</div></div>
   </section>
 
   <section id="goals" class="section">
@@ -134,7 +134,80 @@
   $('exportBtn').addEventListener('click',async()=>{const data={app:'مساعدي الغذائي',version:1,exportedAt:new Date().toISOString(),settings,meals:await allMeals()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`my-food-assistant-backup-${today()}.json`;a.click();URL.revokeObjectURL(url)});
   $('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.meals))throw Error('bad');if(!confirm(`سيتم استيراد ${data.meals.length} وجبة. قد تستبدل وجبات لها نفس المعرّف. هل تريد المتابعة؟`))return;for(const m of data.meals){const copy={...m};delete copy.id;await saveMealDB(copy)}if(data.settings){settings={...defaultSettings,...data.settings};await setSetting('goals',settings)}await refresh();alert('اكتمل الاستيراد. راجع السجل وتأكد من البيانات.')}catch(err){alert('لم نتمكن من قراءة النسخة الاحتياطية. اختر ملف JSON صادرًا من التطبيق.')}e.target.value=''});
   $('foodPhoto').addEventListener('change',e=>{const f=e.target.files[0];if(!f){$('photoPreview').classList.add('hidden');photoDataUrl='';return}const reader=new FileReader();reader.onload=()=>{photoDataUrl=reader.result;$('photoPreview').src=photoDataUrl;$('photoPreview').classList.remove('hidden')};reader.readAsDataURL(f)});
-  $('prepareAnalysis').addEventListener('click',()=>{const text=$('foodDescription').value.trim();if(!text&&!photoDataUrl){alert('اكتب وصفًا أو اختر صورة للوجبة أولًا.');return}const msg=text?`وصفك للمراجعة:\n${text}\n\nلم يتم تحليل الوصف آليًا أو حساب القيم بعد. يمكنك إدخال تقديرات موثوقة يدويًا من صفحة «إضافة وجبة».`:'تم اختيار صورة للمعاينة فقط. لم تُرسل الصورة إلى خدمة ذكاء اصطناعي ولم يتم تحليلها بعد.';$('assistantOutput').textContent=msg;});
+  const FOOD_ASSISTANT_ENDPOINT='https://food-assistant-ai.mohammedtareqabugosh.workers.dev/ask';
+  let latestFoodSuggestion=null;
+  function setAssistantMessage(message){$('assistantOutput').textContent=message;}
+  $('prepareAnalysis').addEventListener('click',async()=>{
+    const description=$('foodDescription').value.trim();
+    if(!description){alert('اكتب وصف الوجبة أو اسمها أولًا. الصورة وحدها لا تكفي حاليًا.');return}
+    const button=$('prepareAnalysis');
+    button.disabled=true;button.textContent='جاري التفكير…';$('assistantActions').classList.add('hidden');latestFoodSuggestion=null;
+    setAssistantMessage('جاري حساب وجباتك المسجّلة اليوم وتجهيز الاقتراح…');
+    try{
+      const meals=await allMeals();
+      const todayMeals=meals.filter(m=>localDay(m.date)===today()).map(m=>({
+        name:String(m.name||'').slice(0,120),
+        calories:Number(m.calories)||0,
+        protein:Number(m.protein)||0,
+        carbs:Number(m.carbs)||0,
+        fat:Number(m.fat)||0
+      }));
+      const response=await fetch(FOOD_ASSISTANT_ENDPOINT,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          mealName:description.slice(0,160),
+          message:description,
+          eatenToday:todayMeals,
+          targetMin:Math.max(1200,(Number(settings.calories)||1900)-100),
+          targetMax:Number(settings.calories)||1900,
+          targetProtein:Number(settings.protein)||140
+        })
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.ok){
+        const detail=data.error||data.message||`خطأ اتصال (${response.status})`;
+        throw new Error(detail);
+      }
+      const a=data.answer||{};
+      latestFoodSuggestion={
+        name:String(a.portion||description).trim()||description,
+        description,
+        calories:Number(a.calories)||0,
+        protein:Number(a.protein)||0,
+        carbs:Number(a.carbs)||0,
+        fat:Number(a.fat)||0,
+        reply:String(a.reply||'تم إعداد اقتراح للوجبة.').trim(),
+        assumptions:Array.isArray(a.assumptions)?a.assumptions:[]
+      };
+      const totalCalories=Number(data.totals?.calories)||todayMeals.reduce((n,m)=>n+m.calories,0);
+      const totalProtein=Number(data.totals?.protein)||todayMeals.reduce((n,m)=>n+m.protein,0);
+      const remainingCalories=Number.isFinite(Number(data.remainingCalories))?Number(data.remainingCalories):Math.max(0,(Number(settings.calories)||1900)-totalCalories);
+      const remainingProtein=Number.isFinite(Number(data.remainingProtein))?Number(data.remainingProtein):Math.max(0,(Number(settings.protein)||140)-totalProtein);
+      const assumptions=latestFoodSuggestion.assumptions.length?'\n\nافتراضات: '+latestFoodSuggestion.assumptions.join('، '):'';
+      setAssistantMessage(`${latestFoodSuggestion.reply}\n\nالكمية المقترحة: ${latestFoodSuggestion.name}\nالسعرات التقديرية: ${Math.round(latestFoodSuggestion.calories)} سعرة\nالبروتين: ${Math.round(latestFoodSuggestion.protein*10)/10} غ\nالكربوهيدرات: ${Math.round(latestFoodSuggestion.carbs*10)/10} غ\nالدهون: ${Math.round(latestFoodSuggestion.fat*10)/10} غ\n\nالمسجّل اليوم: ${Math.round(totalCalories)} سعرة و${Math.round(totalProtein)} غ بروتين\nالمتبقي حسب هدفك: ${Math.round(remainingCalories)} سعرة و${Math.round(remainingProtein)} غ بروتين${assumptions}\n\nهذا اقتراح تقديري فقط؛ لم يتم حفظ أي شيء.`);
+      $('assistantActions').classList.remove('hidden');
+    }catch(err){
+      const msg=String(err?.message||'تعذر الاتصال').slice(0,350);
+      setAssistantMessage(`ما قدرت أجيب اقتراحًا من المساعد.\n\nالسبب: ${msg}\n\nتأكد من اتصال الإنترنت، وإذا استمرت المشكلة أرسل لي نص الخطأ. لم يتم حفظ أي وجبة.`);
+    }finally{button.disabled=false;button.textContent='اسأل المساعد الذكي';}
+  });
+  $('useSuggestion').addEventListener('click',()=>{
+    if(!latestFoodSuggestion)return;
+    resetForm();
+    $('mealName').value=latestFoodSuggestion.description;
+    $('ingredients').value=latestFoodSuggestion.name;
+    $('kcal').value=latestFoodSuggestion.calories;
+    $('protein').value=latestFoodSuggestion.protein;
+    $('carbs').value=latestFoodSuggestion.carbs;
+    $('fat').value=latestFoodSuggestion.fat;
+    $('notes').value='تقديرات مقترحة من المساعد الذكي؛ راجعها قبل الحفظ.';
+    showSection('add');
+    alert('تم نقل الاقتراح إلى نموذج الوجبة فقط. راجع الكمية والقيم، ولن تُحفظ إلا عند ضغط «تأكيد تسجيل الوجبة».');
+  });
+  $('clearAssistant').addEventListener('click',()=>{
+    $('foodDescription').value='';$('foodPhoto').value='';photoDataUrl='';$('photoPreview').removeAttribute('src');$('photoPreview').classList.add('hidden');$('assistantActions').classList.add('hidden');latestFoodSuggestion=null;setAssistantMessage('اكتب وصف الوجبة واضغط «اسأل المساعد الذكي». لن تُحفظ أي وجبة من دون موافقتك.');
+  });
   async function init(){try{db=await openDB();settings={...defaultSettings,...(await getSetting('goals')||{})};$('datePill').textContent=new Intl.DateTimeFormat('ar-JO',{weekday:'short',day:'numeric',month:'short'}).format(new Date());$('mealDate').value='';await refresh();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});}catch(e){alert('تعذر تهيئة قاعدة البيانات. افتح التطبيق من رابط GitHub Pages في Safari وحاول مجددًا.')}} 
   init();
 })();
