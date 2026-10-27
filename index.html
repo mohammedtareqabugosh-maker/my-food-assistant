@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f7f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="مساعدي الغذائي">
+  <title>مساعدي الغذائي</title>
+  <style>
+    :root {
+      --green: #315c45;
+      --green-light: #e6eee5;
+      --cream: #f6f7f1;
+      --card: #ffffff;
+      --text: #202b23;
+      --muted: #7c877d;
+      --line: #e8ece4;
+      --orange: #d78a51;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding-bottom: 100px;
+    }
+
+    button { font: inherit; cursor: pointer; }
+
+    .app {
+      max-width: 520px;
+      min-height: 100vh;
+      margin: auto;
+      padding: 22px 18px 30px;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 26px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: white;
+      border-radius: 16px;
+      font-size: 25px;
+    }
+
+    .brand h1 { font-size: 19px; margin: 0 0 4px; }
+    .brand p { font-size: 12px; margin: 0; color: var(--muted); }
+
+    .date {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--green);
+    }
+
+    .greeting { margin-bottom: 20px; }
+    .greeting small { color: var(--muted); font-size: 13px; }
+    .greeting h2 { font-size: 25px; margin: 7px 0; }
+    .greeting p { color: var(--muted); font-size: 13px; margin: 0; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 23px;
+      padding: 19px;
+      margin-bottom: 16px;
+      box-shadow: 0 5px 20px #263b2710;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h3 { font-size: 16px; margin: 0; }
+    .sub { color: var(--muted); font-size: 12px; }
+
+    .calories {
+      display: grid;
+      grid-template-columns: 142px 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .ring {
+      width: 138px;
+      height: 138px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--green) 0deg, #dfe8dc 0deg);
+      position: relative;
+    }
+
+    .ring::before {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .ring-content { z-index: 1; text-align: center; }
+    .ring-content strong { display: block; font-size: 27px; }
+    .ring-content span { color: var(--muted); font-size: 11px; }
+
+    .calorie-info .number { font-size: 22px; font-weight: 750; }
+    .calorie-info p { margin: 5px 0 15px; color: var(--muted); font-size: 12px; }
+
+    .mini-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 19px;
+    }
+
+    .mini {
+      padding: 12px;
+      background: #f7f8f4;
+      border-radius: 14px;
+    }
+
+    .mini span { display: block; color: var(--muted); font-size: 11px; }
+    .mini strong { display: block; margin-top: 6px; font-size: 17px; }
+    .mini small { font-size: 11px; color: var(--muted); }
+
+    .protein {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .protein-icon {
+      width: 46px;
+      height: 46px;
+      background: #f8ebdb;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+    }
+
+    .protein-main { flex: 1; }
+    .protein-main strong { font-size: 20px; }
+    .protein-main span { color: var(--muted); font-size: 12px; }
+
+    .track {
+      height: 7px;
+      border-radius: 10px;
+      background: #edf0e9;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .track div { width: 0%; height: 100%; background: var(--green); border-radius: 10px; }
+
+    .meal {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .meal:last-child { border-bottom: 0; padding-bottom: 0; }
+    .meal-icon {
+      width: 43px;
+      height: 43px;
+      display: grid;
+      place-items: center;
+      background: var(--green-light);
+      border-radius: 14px;
+      font-size: 21px;
+    }
+
+    .meal-info { flex: 1; }
+    .meal-info strong { display: block; font-size: 14px; }
+    .meal-info span { color: var(--muted); font-size: 11px; display: block; margin-top: 5px; }
+    .meal-total { text-align: left; font-size: 13px; font-weight: 700; }
+    .meal-total small { display: block; color: var(--muted); font-size: 10px; margin-top: 4px; }
+
+    .add-btn {
+      border: 0;
+      background: var(--green);
+      color: white;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .assistant {
+      background: var(--green);
+      color: white;
+      border-radius: 23px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .assistant h3 { margin: 0 0 8px; font-size: 17px; }
+    .assistant p { margin: 0 0 15px; color: #e0e9df; font-size: 12px; line-height: 1.8; }
+    .assistant button {
+      background: #fff;
+      color: var(--green);
+      border: 0;
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      background: #ffffffed;
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--line);
+      padding: 11px 10px calc(11px + env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .nav-item {
+      color: var(--muted);
+      font-size: 10px;
+      text-align: center;
+      min-width: 55px;
+    }
+
+    .nav-item span { display: block; font-size: 20px; margin-bottom: 4px; }
+    .nav-item.active { color: var(--green); font-weight: 750; }
+
+    .notice {
+      display: none;
+      background: #fff4df;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 370px) {
+      .calories { grid-template-columns: 120px 1fr; gap: 12px; }
+      .ring { width: 118px; height: 118px; }
+      .ring-content strong { font-size: 23px; }
+      .greeting h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="brand">
+        <div class="logo">🥗</div>
+        <div>
+          <h1>مساعدي الغذائي</h1>
+          <p>خطوة صغيرة، صحة أفضل</p>
+        </div>
+      </div>
+      <div class="date" id="today"></div>
+    </header>
+
+    <section class="greeting">
+      <small>رحلتك الصحية تبدأ من هنا</small>
+      <h2>أهلًا بك 👋</h2>
+      <p>تابع أكلك اليوم، وقرّب أكثر من هدفك.</p>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h3>ملخص يومك</h3>
+        <span class="sub">السعرات الحرارية</span>
+      </div>
+      <div class="calories">
+        <div class="ring" id="calorieRing">
+          <div class="ring-content">
+            <strong id="eaten">0</strong>
+            <span>سعرة مستهلكة</span>
+          </div>
+        </div>
+        <div class="calorie-info">
+          <div class="sub">هدفك اليومي</div>
+          <div class="number" id="goal">2000</div>
+          <p>سعرة حرارية</p>
+          <div class="sub">المتبقي لك</div>
+          <div class="number" id="remaining">2000</div>
+          <p>سعرة حتى تصل لهدفك</p>
+        </div>
+      </div>
+      <div class="mini-stats">
+        <div class="mini">
+          <span>🍗 البروتين اليوم</span>
+          <strong><b id="proteinEaten">0</b> غ</strong>
+          <small>من <span id="proteinGoal">150</span> غ</small>
+        </div>
+        <div class="mini">
+          <span>🍽️ الوجبات المسجلة</span>
+          <strong id="mealCount">0</strong>
+          <small>وجبات اليوم</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h3>هدف البروتين</h3>
+        <span class="sub">البروتين اليومي</span>
+      </div>
+      <div class="protein">
+        <div class="protein-icon">💪</div>
+        <div class="protein-main">
+          <strong id="proteinSummary">0 / 150 غ</strong>
+          <span>تابع تقدمك نحو هدفك</span>
+          <div class="track"><div id="proteinBar"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h3>وجبات اليوم</h3>
+        <button class="add-btn" id="addMeal">+ إضافة وجبة</button>
+      </div>
+      <div class="meal">
+        <div class="meal-icon">🍳</div>
+        <div class="meal-info">
+          <strong>الفطور</strong>
+          <span>ابدأ يومك بوجبة متوازنة</span>
+        </div>
+        <div class="meal-total">—<small>لم تُسجل وجبة</small></div>
+      </div>
+      <div class="meal">
+        <div class="meal-icon">🍚</div>
+        <div class="meal-info">
+          <strong>الغداء</strong>
+          <span>وجبتك الرئيسية</span>
+        </div>
+        <div class="meal-total">—<small>لم تُسجل وجبة</small></div>
+      </div>
+      <div class="meal">
+        <div class="meal-icon">🥗</div>
+        <div class="meal-info">
+          <strong>العشاء</strong>
+          <span>وجبة خفيفة ومتوازنة</span>
+        </div>
+        <div class="meal-total">—<small>لم تُسجل وجبة</small></div>
+      </div>
+      <div class="meal">
+        <div class="meal-icon">🍎</div>
+        <div class="meal-info">
+          <strong>وجبات خفيفة ومشروبات</strong>
+          <span>سجّل ما تتناوله بين الوجبات</span>
+        </div>
+        <div class="meal-total">—<small>لم تُسجل وجبة</small></div>
+      </div>
+      <div class="notice" id="notice"></div>
+    </section>
+
+    <section class="assistant">
+      <h3>✨ مساعدك الغذائي</h3>
+      <p>عند تجهيز المساعد، ستتمكن من وصف وجبتك بالعربية والحصول على تقدير للسعرات والبروتين قبل تأكيد تسجيلها.</p>
+      <button id="assistantBtn">استكشف المساعد الغذائي ←</button>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h3>تذكير اليوم</h3>
+        <span>🌿</span>
+      </div>
+      <p style="font-size:13px;line-height:1.9;color:var(--muted);margin:0">
+        اهتم بتوازن وجباتك، واشرب الماء بانتظام. الاستمرارية أهم من الكمال.
+      </p>
+    </section>
+  </main>
+
+  <nav class="bottom">
+    <div class="nav-item active"><span>⌂</span>الرئيسية</div>
+    <div class="nav-item" id="historyNav"><span>▤</span>السجل</div>
+    <div class="nav-item" id="chatNav"><span>✧</span>المساعد</div>
+    <div class="nav-item" id="settingsNav"><span>⚙</span>الأهداف</div>
+  </nav>
+
+  <script>
+    const date = new Date();
+    document.getElementById("today").textContent =
+      new Intl.DateTimeFormat("ar-JO", {
+        weekday: "short",
+        day: "numeric",
+        month: "short"
+      }).format(date);
+
+    document.getElementById("addMeal").addEventListener("click", () => {
+      const notice = document.getElementById("notice");
+      notice.style.display = "block";
+      notice.textContent =
+        "واجهة تسجيل الوجبات ستُفعّل في المرحلة التالية بعد تجهيز نظام الحفظ الدائم، حتى لا نخاطر بفقدان بياناتك.";
+    });
+
+    document.getElementById("assistantBtn").addEventListener("click", () => {
+      alert("سنضيف المساعد الغذائي بعد تجهيز سجل الوجبات والحسابات الأساسية.");
+    });
+
+    document.getElementById("historyNav").addEventListener("click", () => {
+      alert("سنضيف سجل الوجبات والبحث حسب التاريخ في المرحلة المخصصة له.");
+    });
+
+    document.getElementById("chatNav").addEventListener("click", () => {
+      document.querySelector(".assistant").scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.getElementById("settingsNav").addEventListener("click", () => {
+      alert("سنضيف صفحة الأهداف القابلة للتعديل في مرحلة الحسابات الغذائية.");
+    });
+  </script>
+</body>
+</html>
