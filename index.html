@@ -236,10 +236,10 @@
       latestFoodSuggestion={
         name:String(a.portion||description).trim()||description,
         description,
-        calories:Number(a.calories)||0,
-        protein:Number(a.protein)||0,
-        carbs:Number(a.carbs)||0,
-        fat:Number(a.fat)||0,
+        calories:localFood ? localFood.calories : (Number(a.calories)||0),
+protein:localFood ? localFood.protein : (Number(a.protein)||0),
+carbs:localFood ? localFood.carbs : (Number(a.carbs)||0),
+fat:localFood ? localFood.fat : (Number(a.fat)||0),
         reply:String(a.reply||'تم إعداد اقتراح للوجبة.').trim(),
         assumptions:Array.isArray(a.assumptions)?a.assumptions:[]
       };
