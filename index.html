@@ -84,4 +84,7 @@ $('clearAssistant').onclick=()=>{$('foodDescription').value='';$('foodPhoto').va
 async function init(){try{db=await openDB();settings={...settings,...(await getSetting('goals')||{})};$('datePill').textContent=new Intl.DateTimeFormat('ar-JO',{weekday:'short',day:'numeric',month:'short'}).format(new Date());$('historyDate').value=today();await refresh();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{})}catch(e){alert('تعذر تهيئة قاعدة البيانات. افتح التطبيق من رابط GitHub Pages في Safari وحاول مجددًا.')}}
 init();
 })();
-</script></body></html>
+</script>
+<script src="./food-supabase-sync.js"></script>
+</body>
+</html>
