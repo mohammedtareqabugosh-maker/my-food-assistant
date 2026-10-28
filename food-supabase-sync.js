@@ -139,6 +139,30 @@
     return changed;
   }
 
+  // ---- سجلات محلية: الوجبات المتزامنة سابقاً، والوجبات المحذوفة ----
+  async function getSettingValue(key) {
+    const d = await openLocalDB();
+    const row = await request(
+      d.transaction("settings", "readonly").objectStore("settings").get(key)
+    );
+    return Array.isArray(row?.value) ? row.value : [];
+  }
+
+  async function setSettingValue(key, value) {
+    const d = await openLocalDB();
+    return request(
+      d.transaction("settings", "readwrite").objectStore("settings")
+        .put({ key, value })
+    );
+  }
+
+  async function deleteLocalMealById(id) {
+    const d = await openLocalDB();
+    return request(
+      d.transaction("meals", "readwrite").objectStore("meals").delete(id)
+    );
+  }
+
   async function sync() {
     if (busy) return;
     busy = true;
@@ -156,23 +180,30 @@
       const local = await getLocalMeals();
       await ensureClientIds(local);
 
-      const currentLocal = await getLocalMeals();
-      const remoteRows = currentLocal.map(m => toRemote(m, user.id));
+      // 1) الوجبات التي حذفها المستخدم من هذا التطبيق تُحذف من السحابة أولاً.
+      const tombstones = await getSettingValue("deletedMeals");
+      if (tombstones.length) {
+        status("جارٍ حذف " + tombstones.length + " وجبة من السحابة...");
 
-      if (remoteRows.length) {
-        status("جارٍ رفع " + remoteRows.length + " وجبة...");
-
-        const { error } = await client
+        const { error: delError } = await client
           .from(TABLE)
-          .upsert(remoteRows, {
-            onConflict: "user_id,client_id"
-          });
+          .delete()
+          .eq("user_id", user.id)
+          .in("client_id", tombstones);
 
-        if (error) {
-          throw new Error("تعذّر رفع الوجبات: " + error.message);
+        if (delError) {
+          throw new Error("تعذّر حذف الوجبات من السحابة: " + delError.message);
         }
+
+        const syncedNow = await getSettingValue("syncedMeals");
+        await setSettingValue(
+          "syncedMeals",
+          syncedNow.filter(id => !tombstones.includes(id))
+        );
+        await setSettingValue("deletedMeals", []);
       }
 
+      // 2) تنزيل القائمة الحالية من السحابة.
       status("جارٍ تنزيل الوجبات من السحابة...");
 
       const { data: remote, error: downloadError } = await client
@@ -184,17 +215,32 @@
         throw new Error("تعذّر تنزيل الوجبات: " + downloadError.message);
       }
 
+      const remoteRows = remote || [];
+      const remoteIds = new Set(
+        remoteRows.map(r => r.client_id).filter(Boolean)
+      );
+
+      // 3) وجبة كانت متزامنة ثم اختفت من السحابة = حُذفت من التطبيق الآخر.
+      const syncedBefore = new Set(await getSettingValue("syncedMeals"));
+      let removed = 0;
+
+      for (const m of await getLocalMeals()) {
+        if (m.clientId && syncedBefore.has(m.clientId) && !remoteIds.has(m.clientId)) {
+          await deleteLocalMealById(m.id);
+          removed++;
+        }
+      }
+
+      // 4) إضافة الوجبات الجديدة من السحابة أو تحديث الأحدث منها.
       const latestLocal = await getLocalMeals();
       const byClientId = new Map(
-        latestLocal
-          .filter(m => m.clientId)
-          .map(m => [m.clientId, m])
+        latestLocal.filter(m => m.clientId).map(m => [m.clientId, m])
       );
 
       let added = 0;
       let updated = 0;
 
-      for (const row of remote || []) {
+      for (const row of remoteRows) {
         if (!row.client_id) continue;
 
         const existing = byClientId.get(row.client_id);
@@ -203,29 +249,47 @@
 
         if (existing && localTime >= remoteTime) continue;
 
-        const meal = toLocal(row, existing);
-        await putLocalMeal(meal);
+        await putLocalMeal(toLocal(row, existing));
 
         if (existing) updated++;
         else added++;
       }
 
-      const refresh = document.querySelector("#food-sync-status");
-      if (refresh) {
-        status(
-          "اكتملت المزامنة بنجاح. " +
-          "تم تنزيل " + added + " وجبة جديدة" +
-          (updated ? " وتحديث " + updated + " وجبة." : ".")
-        );
+      // 5) رفع الوجبات المحلية المتبقية (الجديدة أو المعدّلة).
+      const finalLocal = await getLocalMeals();
+      const remoteUpload = finalLocal.map(m => toRemote(m, user.id));
+
+      if (remoteUpload.length) {
+        status("جارٍ رفع " + remoteUpload.length + " وجبة...");
+
+        const { error } = await client
+          .from(TABLE)
+          .upsert(remoteUpload, {
+            onConflict: "user_id,client_id"
+          });
+
+        if (error) {
+          throw new Error("تعذّر رفع الوجبات: " + error.message);
+        }
       }
 
-      // تحديث واجهة التطبيق إن كانت دواله متاحة.
+      // 6) حفظ قائمة الوجبات المتزامنة لاستخدامها في المزامنة التالية.
+      await setSettingValue(
+        "syncedMeals",
+        (await getLocalMeals()).map(m => m.clientId).filter(Boolean)
+      );
+
+      status(
+        "اكتملت المزامنة بنجاح. تم تنزيل " + added + " وجبة جديدة" +
+        (updated ? "، وتحديث " + updated : "") +
+        (removed ? "، وحذف " + removed + " وجبة حُذفت من التطبيق الآخر" : "") +
+        "."
+      );
+
       window.dispatchEvent(new CustomEvent("food-sync-complete"));
-      alert("اكتملت المزامنة. أعد تحميل التطبيق إذا لم تظهر الوجبات الجديدة.");
     } catch (error) {
       console.error("Food sync error:", error);
       status(String(error.message || error));
-      alert(String(error.message || error));
     } finally {
       busy = false;
     }
