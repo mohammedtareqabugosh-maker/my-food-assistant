@@ -99,5 +99,46 @@ init();
 })();
 </script>
 <script src="./food-supabase-sync.js"></script>
+
+<style>
+#weeklyDays button{min-width:0;padding:8px 2px;border:1px solid #d6d8ce;border-radius:10px;background:transparent;color:inherit;font:inherit;font-size:11px}
+#weeklyDays button.active{background:#b8862b;color:white;border-color:#b8862b}
+#weeklyMeals .meal{margin:8px 0}
+#weekly .weekly-empty{padding:16px;text-align:center;opacity:.7;border:1px dashed #ccc;border-radius:12px}
+@media(max-width:380px){#weeklyDays button{font-size:10px;padding:7px 0}}
+</style>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const names=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const pad=n=>String(n).padStart(2,'0');
+const keyDate=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parseLocal=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d,12,0,0)};
+let selected=keyDate(new Date()),dbRef=null;
+function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open('my-food-assistant-db');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onupgradeneeded=()=>{req.transaction.abort();reject(new Error('database missing'))}})}
+function getMeals(){return new Promise((resolve,reject)=>{try{const tx=dbRef.transaction('meals','readonly'),r=tx.objectStore('meals').getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)}catch(e){reject(e)}})}
+function localMealDate(v){const d=new Date(v);return Number.isNaN(d.getTime())?'':keyDate(d)}
+function timeOf(v){const d=new Date(v);return Number.isNaN(d.getTime())?'':new Intl.DateTimeFormat('ar-JO',{hour:'2-digit',minute:'2-digit',hour12:true}).format(d)}
+function escape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function render(){
+  $('weeklyDate').value=selected;
+  const date=parseLocal(selected),sun=new Date(date);sun.setDate(date.getDate()-date.getDay());
+  $('weeklyDays').innerHTML=Array.from({length:7},(_,i)=>{const d=new Date(sun);d.setDate(sun.getDate()+i);const k=keyDate(d);return '<button type="button" data-week-date="'+k+'" class="'+(k===selected?'active':'')+'">'+names[i]+'<br>'+d.getDate()+'</button>'}).join('');
+  try{
+    const meals=(await getMeals()).filter(m=>localMealDate(m.date)===selected).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const kcal=meals.reduce((s,m)=>s+(Number(m.calories)||0),0),protein=meals.reduce((s,m)=>s+(Number(m.protein)||0),0);
+    $('weeklyTotals').textContent='مجموع اليوم: '+Math.round(kcal)+' سعرة حرارية · '+Math.round(protein)+' غ بروتين';
+    $('weeklyMeals').innerHTML=meals.length?meals.map(m=>'<div class="meal"><div class="emoji">'+(m.type==='الفطور'?'🍳':m.type==='الغداء'?'🍚':m.type==='العشاء'?'🥗':'🍎')+'</div><div class="mealinfo"><b>'+escape(m.name)+'</b><small>'+escape(m.type||'وجبة')+' · '+escape(timeOf(m.date))+' · '+Math.round(Number(m.calories)||0)+' سعرة · '+Math.round(Number(m.protein)||0)+'غ بروتين</small></div><div class="mealactions"><button class="btn light" type="button" data-edit="'+Number(m.id)+'">تعديل</button><button class="btn danger" type="button" data-del="'+Number(m.id)+'">حذف</button></div></div>').join(''):'<div class="weekly-empty">ما في وجبات مسجلة لهذا اليوم. أضف وجبة لتظهر هنا.</div>';
+  }catch(e){$('weeklyTotals').textContent='';$('weeklyMeals').innerHTML='<div class="weekly-empty">تعذر قراءة الوجبات. افتح التطبيق مجددًا وحاول مرة أخرى.</div>'}
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-week-date]');if(b){selected=b.dataset.weekDate;render()}});
+$('weeklyDate').addEventListener('change',()=>{if($('weeklyDate').value){selected=$('weeklyDate').value;render()}});
+$('weeklyAdd').addEventListener('click',()=>{document.querySelector('[data-go="add"]')?.click();const field=$('mealDate');if(field)field.value=selected+'T12:00';});
+document.querySelector('[data-go="weekly"]')?.addEventListener('click',()=>{render()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById('weekly')?.classList.contains('active'))render()});
+openDB().then(d=>{dbRef=d;render()}).catch(()=>{ $('weeklyMeals').innerHTML='<div class="weekly-empty">تعذر فتح قاعدة بيانات الوجبات. افتح التطبيق من رابط GitHub Pages.</div>'});
+})();
+</script>
+
 </body>
 </html>
