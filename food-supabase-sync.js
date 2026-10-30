@@ -18,7 +18,19 @@
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
-  async function openDB() { return req(indexedDB.open(DB_NAME, 1)); }
+  async function openDB() {
+    const opening = indexedDB.open(DB_NAME, 1);
+    opening.onupgradeneeded = () => {
+      const db = opening.result;
+      if (!db.objectStoreNames.contains("meals")) {
+        const store = db.createObjectStore("meals", {keyPath: "id", autoIncrement: true});
+        store.createIndex("date", "date");
+        store.createIndex("name", "name");
+      }
+      if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", {keyPath: "key"});
+    };
+    return req(opening);
+  }
   async function readSetting(db, key) {
     if (!db.objectStoreNames.contains("settings")) return undefined;
     return (await req(db.transaction("settings", "readonly").objectStore("settings").get(key)))?.value;
