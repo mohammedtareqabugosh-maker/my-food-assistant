@@ -213,12 +213,25 @@ async function syncMealsToLocal(){
   const prevReq=settings.get('sharedScheduleIds');
   prevReq.onsuccess=()=>{
    const prev=Array.isArray(prevReq.result?.value)?prevReq.result.value:[];
-   for(const id of prev){if(!currentIds.has(String(id))){const old=byId.get(String(id));if(old)store.delete(old.id)}}
+   const removedIds=[];
+   for(const id of prev){
+    if(!currentIds.has(String(id))){
+     const old=byId.get(String(id));
+     if(old){store.delete(old.id);if(old.clientId)removedIds.push(String(old.clientId))}
+    }
+   }
    for(const r of remoteMeals){
     const old=byId.get(String(r.id));
     store.put({...(old&&old.id!==undefined?{id:old.id}:{}),clientId:String(r.id),name:r.title||'وجبة',type:r.meal_type||'وجبة خفيفة',date:r.starts_at,ingredients:r.ingredients||r.details||'',notes:r.details||'',calories:Number(r.calories)||0,protein:Number(r.protein)||0,carbs:Number(r.carbs)||0,fat:Number(r.fat)||0,updatedAt:r.updated_at||new Date().toISOString()});
    }
    settings.put({key:'sharedScheduleIds',value:[...currentIds]});
+   if(removedIds.length){
+    const deletedReq=settings.get('deletedMeals');
+    deletedReq.onsuccess=()=>{
+     const deleted=Array.isArray(deletedReq.result?.value)?deletedReq.result.value:[];
+     settings.put({key:'deletedMeals',value:[...new Set([...deleted,...removedIds])]});
+    };
+   }
   };
   tx.oncomplete=()=>window.dispatchEvent(new Event('shared-schedule-updated'));
  }catch(e){console.warn('Shared meal local sync failed',e)}
