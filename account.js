@@ -95,7 +95,7 @@
     subtitle.textContent = mode === 'reset' ? 'سنرسل رابط استعادة كلمة المرور إلى بريدك.' : 'سجّل الدخول للوصول إلى سجل الوجبات من أجهزتك.';
     body.innerHTML = `
       <div class="sahn-account-tabs"><button type="button" data-mode="login" class="${mode==='login'?'active':''}">تسجيل الدخول</button><button type="button" data-mode="signup" class="${mode==='signup'?'active':''}">إنشاء حساب</button></div>
-      ${mode==='reset'?'':'<label class="sahn-account-field">البريد الإلكتروني<input id="sahnAuthEmail" type="email" autocomplete="email" required placeholder="name@example.com"></label>'}
+      '<label class="sahn-account-field">البريد الإلكتروني<input id="sahnAuthEmail" type="email" autocomplete="email" required placeholder="name@example.com"></label>'
       ${mode==='reset'?'':'<label class="sahn-account-field">كلمة المرور<input id="sahnAuthPassword" type="password" autocomplete="'+(mode==='signup'?'new-password':'current-password')+'" minlength="6" placeholder="6 أحرف على الأقل" required></label>'}
       <p class="sahn-account-message ${error?'error':''}" role="status">${esc(message)}</p>
       <button class="sahn-account-primary" type="button" data-account-submit ${busy?'disabled':''}>${busy?'لحظة واحدة…':mode==='login'?'تسجيل الدخول':mode==='signup'?'إنشاء حساب':'إرسال رابط الاستعادة'}</button>
