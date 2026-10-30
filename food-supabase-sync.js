@@ -7,6 +7,7 @@
   const TABLE = "meals";
   let client = null;
   let busy = false;
+  let declinedUserId = null;
 
   const status = message => {
     const node = document.getElementById("food-sync-status") ||
@@ -71,8 +72,14 @@
       const {data: {user}, error: authError} = await client.auth.getUser();
       if (authError) throw authError;
       if (!user) return;
+      if (declinedUserId === user.id) return;
       db = await openDB();
       if (!db.objectStoreNames.contains("meals")) throw new Error("لم يتم العثور على سجل الوجبات المحلي.");
+      const previousUserId = await readSetting(db, "syncUserId");
+      if (previousUserId && previousUserId !== user.id) {
+        const approved = window.confirm("هذا الجهاز يحتوي على وجبات مرتبطة بحساب سابق. هل تريد نسخ الوجبات المحلية إلى الحساب الحالي؟ لن تُنقل بيانات السحابة القديمة تلقائيًا، لكن جميع الوجبات الموجودة على هذا الجهاز قد تُرفع إلى الحساب الحالي.");
+        if (!approved) { declinedUserId = user.id; status("أوقفت المزامنة لتجنب نقل وجبات الجهاز إلى حساب آخر."); return; }
+      }
       const local = await allLocal(db);
       for (const meal of local) {
         if (!meal.clientId) {
@@ -149,9 +156,9 @@
         if (scheduleError) throw new Error("تمت مزامنة سجل الغذاء لكن تعذّر تحديث الجدول المشترك: " + scheduleError.message);
       }
       await writeSetting(db, "syncedMeals", finalLocal.map(meal => meal.clientId).filter(Boolean));
+      await writeSetting(db, "syncUserId", user.id);
       status("اكتملت المزامنة: " + added + " وجبات جديدة" + (updated ? "، وتحديث " + updated : "") + ".");
       window.dispatchEvent(new Event("food-sync-complete"));
-      window.dispatchEvent(new Event("shared-schedule-refresh"));
     } catch (error) {
       console.error("Food sync error:", error);
       status(String(error?.message || error));
@@ -170,6 +177,7 @@
       if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED")) setTimeout(sync, 0);
     });
     window.addEventListener("food-meal-changed", () => setTimeout(sync, 0));
+    window.addEventListener("shared-schedule-updated", () => setTimeout(sync, 0));
   }
   window.addEventListener("shared-schedule-client-ready", attach);
   if (window.sharedScheduleClient) attach();
