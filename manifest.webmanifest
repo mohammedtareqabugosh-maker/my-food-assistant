@@ -1,14 +1,14 @@
 {
   "name": "صحن — مساعدك الغذائي",
   "short_name": "صحن",
-  "description": "صحن: سجّل وجباتك وتابع السعرات والمغذيات والأهداف الغذائية في تجربة عربية بسيطة.",
+  "description": "مساحة غذائية عربية لتسجيل الوجبات ومتابعة السعرات والمغذيات وبناء عادات صحية.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f6ef",
-  "theme_color": "#f5f6ef",
+  "background_color": "#f4f3eb",
+  "theme_color": "#354b28",
   "icons": [
     {
       "src": "./icons/icon.svg",
