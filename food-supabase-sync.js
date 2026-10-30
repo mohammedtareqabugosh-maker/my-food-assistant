@@ -196,6 +196,17 @@
           throw new Error("تعذّر حذف الوجبات من السحابة: " + delError.message);
         }
 
+        // حذف سجل الوجبة المقابل من الجدول الموحد قبل إسقاط علامة الحذف.
+        const { error: scheduleDeleteError } = await client
+          .from("shared_schedule")
+          .delete()
+          .eq("user_id", user.id)
+          .in("id", tombstones);
+
+        if (scheduleDeleteError) {
+          throw new Error("حُذفت الوجبة من سجل الغذاء لكن تعذّر حذفها من الجدول الموحد: " + scheduleDeleteError.message);
+        }
+
         const syncedNow = await getSettingValue("syncedMeals");
         await setSettingValue(
           "syncedMeals",
@@ -223,10 +234,26 @@
 
       // 3) وجبة كانت متزامنة ثم اختفت من السحابة = حُذفت من التطبيق الآخر.
       const syncedBefore = new Set(await getSettingValue("syncedMeals"));
+      const localBeforeDownload = await getLocalMeals();
+      const missingFromCloud = localBeforeDownload.filter(
+        m => m.clientId && syncedBefore.has(m.clientId) && !remoteIds.has(m.clientId)
+      );
       let removed = 0;
 
-      for (const m of await getLocalMeals()) {
-        if (m.clientId && syncedBefore.has(m.clientId) && !remoteIds.has(m.clientId)) {
+      // إذا حُذفت وجبة من سجل الغذاء على جهاز آخر، احذف عنصرها من الجدول الموحد أيضًا.
+      const missingIds = missingFromCloud.map(m => m.clientId);
+      if (missingIds.length) {
+        const { error: scheduleDeleteError } = await client
+          .from("shared_schedule")
+          .delete()
+          .eq("user_id", user.id)
+          .in("id", missingIds);
+
+        if (scheduleDeleteError) {
+          throw new Error("تعذّر مزامنة حذف الوجبات من الجدول الموحد: " + scheduleDeleteError.message);
+        }
+
+        for (const m of missingFromCloud) {
           await deleteLocalMealById(m.id);
           removed++;
         }
@@ -399,8 +426,13 @@
         : "سجّل الدخول أو أنشئ حسابًا للبدء."
     );
 
-    // عند فتح التطبيق بجلسة محفوظة أو نجاح تسجيل الدخول، ابدأ المزامنة تلقائيًا.
+    // عند فتح التطبيق بجلسة محفوظة، عالج تغييرات السحابة تلقائيًا.
     if (session) setTimeout(() => sync(), 0);
+
+    // إذا حدّث الجدول الموحد السجل المحلي، نفّذ المزامنة لتطبيق الحذف على السحابة أيضًا.
+    window.addEventListener("shared-schedule-updated", () => {
+      setTimeout(() => sync(), 0);
+    });
 
     client.auth.onAuthStateChange((event, sessionNow) => {
       if (!sessionNow) {
