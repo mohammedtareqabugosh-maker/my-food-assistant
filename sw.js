@@ -1,4 +1,4 @@
-const CACHE_NAME = "my-food-assistant-v11";
+const CACHE_NAME = "my-food-assistant-v12";
 const FILES = ["./", "./index.html", "./food-supabase-sync.js", "./manifest.webmanifest", "./icons/icon.svg", "./fonts/tajawal-arabic-400-normal-CyCXRvzh.woff2", "./fonts/tajawal-arabic-500-normal-BZ8ojJNu.woff2", "./fonts/tajawal-arabic-700-normal-D2-eand5.woff2", "./fonts/tajawal-arabic-800-normal-TQp-UTiE.woff2", "./fonts/tajawal-latin-400-normal-BVNSOH3d.woff2", "./fonts/tajawal-latin-500-normal-CoYeBiSI.woff2", "./fonts/tajawal-latin-700-normal-BypgxfGb.woff2", "./fonts/tajawal-latin-800-normal-CmI34b-g.woff2"];
 
 self.addEventListener("install", event => {
