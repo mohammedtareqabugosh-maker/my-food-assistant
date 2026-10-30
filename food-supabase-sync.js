@@ -48,21 +48,27 @@
     return req(db.transaction("meals", "readwrite").objectStore("meals").delete(id));
   }
   function newClientId() {
-    if (crypto.randomUUID) return crypto.randomUUID();
+    if (typeof globalThis.crypto?.randomUUID === "function") return globalThis.crypto.randomUUID();
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
       const r = Math.random() * 16 | 0;
       return (c === "x" ? r : (r & 3 | 8)).toString(16);
     });
   }
   function toRemote(meal, userId) {
+    const mealDate = new Date(meal.date);
+    if (!Number.isFinite(mealDate.getTime())) {
+      throw new Error("توجد وجبة بتاريخ غير صالح. افتح سجل الوجبات وصحّح تاريخها قبل المزامنة.");
+    }
+    const changedAt = new Date(meal.updatedAt || Date.now());
+    const updatedAt = Number.isFinite(changedAt.getTime()) ? changedAt.toISOString() : new Date().toISOString();
     return {
       user_id: userId, client_id: String(meal.clientId),
       meal_name: String(meal.name || "وجبة"), meal_type: String(meal.type || ""),
-      meal_date: new Date(meal.date).toISOString(),
+      meal_date: mealDate.toISOString(),
       calories: Number(meal.calories) || 0, protein: Number(meal.protein) || 0,
       carbs: Number(meal.carbs) || 0, fat: Number(meal.fat) || 0,
       ingredients: String(meal.ingredients || ""), notes: String(meal.notes || ""),
-      updated_at: meal.updatedAt || new Date().toISOString()
+      updated_at: updatedAt
     };
   }
   function toLocal(row, existing) {
@@ -157,7 +163,7 @@
           id: String(meal.clientId), user_id: user.id, kind: "meal",
           title: String(meal.name || "وجبة"),
           details: String(meal.ingredients || meal.notes || ""),
-          starts_at: new Date(meal.date).toISOString(),
+          starts_at: upload.find(row => row.client_id === String(meal.clientId))?.meal_date,
           meal_type: String(meal.type || ""), calories: Number(meal.calories) || 0,
           protein: Number(meal.protein) || 0, carbs: Number(meal.carbs) || 0,
           fat: Number(meal.fat) || 0, ingredients: String(meal.ingredients || ""),
@@ -169,6 +175,10 @@
       }
       await writeSetting(db, "syncedMeals", finalLocal.map(meal => meal.clientId).filter(Boolean));
       await writeSetting(db, "syncUserId", user.id);
+      if (previousUserId !== user.id) {
+        // Only refresh the shared schedule after account consent and successful sync.
+        window.dispatchEvent(new Event("shared-schedule-refresh"));
+      }
       status("اكتملت المزامنة: " + added + " وجبات جديدة" + (updated ? "، وتحديث " + updated : "") + ".");
       window.dispatchEvent(new Event("food-sync-complete"));
     } catch (error) {
