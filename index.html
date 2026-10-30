@@ -6,12 +6,96 @@
 <meta name="description" content="تسجيل الوجبات ومتابعة السعرات والمغذيات">
 <link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="./icons/icon.svg"><link rel="apple-touch-icon" href="./icons/icon.svg"><title>مساعدي الغذائي</title>
 <style>
-:root{--g:#315c45;--g2:#e5eee4;--bg:#f5f6ef;--ink:#202a22;--muted:#778177;--line:#e7ebe3;--red:#b94b45}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:85px}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;padding:18px 14px 30px}
-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}.brand{display:flex;align-items:center;gap:10px}.logo{width:45px;height:45px;border-radius:15px;background:var(--g);color:white;display:grid;place-items:center;font-size:24px}.brand h1{font-size:19px;margin:0 0 4px}.brand p{font-size:12px;color:var(--muted);margin:0}.date{background:white;border:1px solid var(--line);border-radius:12px;padding:9px;font-size:12px;color:var(--g)}
-.intro{margin-bottom:16px}.intro small,.muted{color:var(--muted);font-size:12px}.intro h2{font-size:24px;margin:7px 0}.intro p{font-size:13px;color:var(--muted);line-height:1.8;margin:0}.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 5px 20px #243c250c}.head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}.head h3{font-size:16px;margin:0}.summary{display:grid;grid-template-columns:125px 1fr;gap:15px;align-items:center}.ring{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--g) 0deg,#e7ece4 0deg);position:relative}.ring:before{content:"";position:absolute;inset:10px;background:#fff;border-radius:50%}.ring div{z-index:1;text-align:center}.ring strong{display:block;font-size:24px}.ring span{font-size:10px;color:var(--muted)}.big{font-size:22px;font-weight:800;margin:5px 0}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:15px}.mini,.macro{background:#f7f8f4;border-radius:13px;padding:11px}.mini span,.macro span{display:block;font-size:11px;color:var(--muted)}.mini strong,.macro strong{display:block;margin-top:5px;font-size:17px}.macros{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.btn{border:0;border-radius:12px;padding:11px 13px;font-weight:700;font-size:13px;background:var(--g);color:#fff}.btn.light{background:var(--g2);color:var(--g)}.btn.outline{background:white;border:1px solid var(--line);color:var(--g)}.btn.danger{background:#fff0ef;color:var(--red)}.btn:disabled{opacity:.5}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.section{display:none}.section.active{display:block}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:var(--muted)}.field input,.field select,.field textarea{width:100%;min-width:0;border:1px solid #dfe5dc;background:#fff;border-radius:11px;padding:11px;color:var(--ink)}.field textarea{min-height:80px;resize:vertical}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.full{grid-column:1/-1}.meal{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.meal:last-child{border:0}.emoji{width:40px;height:40px;border-radius:13px;background:var(--g2);display:grid;place-items:center;font-size:20px}.mealinfo{flex:1;min-width:0}.mealinfo b{font-size:13px;overflow-wrap:anywhere}.mealinfo small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.mealval{text-align:left;font-size:13px;font-weight:800}.mealval small{display:block;color:var(--muted);font-size:10px;font-weight:400}.empty{text-align:center;padding:20px 8px;color:var(--muted);font-size:13px;line-height:1.8}.notice{background:#fff5e5;padding:11px;border-radius:12px;font-size:12px;line-height:1.8;margin-top:12px}.chat{white-space:pre-wrap;line-height:1.8;font-size:13px;background:#fafbf8;border:1px solid var(--line);padding:12px;border-radius:14px;margin-top:14px}.hidden{display:none!important}.bottom{position:fixed;z-index:5;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:#fffffff2;backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom))}.nav{border:0;background:none;color:var(--muted);font-size:10px;min-width:55px}.nav span{display:block;font-size:20px;margin-bottom:2px}.nav.active{color:var(--g);font-weight:800}.preview{max-width:100%;max-height:200px;border-radius:12px;margin-top:10px}
-@media(max-width:390px){.summary{grid-template-columns:105px 1fr;gap:10px}.ring{width:102px;height:102px}.ring strong{font-size:21px}.big{font-size:19px}.card{padding:13px}}
+@font-face{font-family:'Tajawal';font-style:normal;font-weight:400;font-display:swap;src:url(./fonts/tajawal-arabic-400-normal-CyCXRvzh.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Tajawal';font-style:normal;font-weight:500;font-display:swap;src:url(./fonts/tajawal-arabic-500-normal-BZ8ojJNu.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Tajawal';font-style:normal;font-weight:700;font-display:swap;src:url(./fonts/tajawal-arabic-700-normal-D2-eand5.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Tajawal';font-style:normal;font-weight:800;font-display:swap;src:url(./fonts/tajawal-arabic-800-normal-TQp-UTiE.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Tajawal';font-style:normal;font-weight:400;font-display:swap;src:url(./fonts/tajawal-latin-400-normal-BVNSOH3d.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Tajawal';font-style:normal;font-weight:500;font-display:swap;src:url(./fonts/tajawal-latin-500-normal-CoYeBiSI.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Tajawal';font-style:normal;font-weight:700;font-display:swap;src:url(./fonts/tajawal-latin-700-normal-BypgxfGb.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Tajawal';font-style:normal;font-weight:800;font-display:swap;src:url(./fonts/tajawal-latin-800-normal-CmI34b-g.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--primitive-olive-950:#28352c;--primitive-olive-800:#496315;--primitive-olive-700:#58751b;--primitive-olive-200:#dbe5c5;--primitive-olive-100:#e8eedb;--primitive-paper:#f5f6ef;--primitive-surface:#fcfcf8;--primitive-ink:#242820;--primitive-stone:#687064;--primitive-line:#dfe3d6;--primitive-danger:#a44435;--primitive-warning:#9a5a18;
+--bg:var(--primitive-paper);--surface:var(--primitive-surface);--surface-subtle:oklch(96.5% 0.014 115);--ink:var(--primitive-ink);--muted:var(--primitive-stone);--line:var(--primitive-line);--accent:var(--primitive-olive-700);--accent-strong:var(--primitive-olive-800);--accent-soft:var(--primitive-olive-100);--accent-border:var(--primitive-olive-200);--on-accent:#fcfdf8;--danger:var(--primitive-danger);--danger-soft:oklch(94% 0.025 35);--warning:var(--primitive-warning);--warning-soft:oklch(95% 0.03 75);--ring-track:#e7ece4;--shadow:0 14px 36px -28px oklch(30% 0.03 120 / 35%);
+--g:var(--accent);--g2:var(--accent-soft);--red:var(--danger);--radius-sm:12px;--radius-md:18px;--radius-lg:26px;
+color-scheme:light;font-family:'Tajawal','Noto Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:oklch(20% 0.018 120);--surface:oklch(24% 0.018 120);--surface-subtle:oklch(27% 0.018 120);--ink:oklch(94% 0.015 110);--muted:oklch(76% 0.025 115);--line:oklch(34% 0.02 120);--accent:oklch(76% 0.13 125);--accent-strong:oklch(82% 0.12 125);--accent-soft:oklch(30% 0.04 125);--accent-border:oklch(40% 0.06 125);--on-accent:oklch(20% 0.025 120);--danger:oklch(72% 0.13 35);--danger-soft:oklch(29% 0.04 35);--warning:oklch(78% 0.12 75);--warning-soft:oklch(29% 0.04 75);--ring-track:oklch(34% 0.02 120);--shadow:0 16px 40px -28px oklch(5% 0.02 120 / 70%)}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:oklch(20% 0.018 120);--surface:oklch(24% 0.018 120);--surface-subtle:oklch(27% 0.018 120);--ink:oklch(94% 0.015 110);--muted:oklch(76% 0.025 115);--line:oklch(34% 0.02 120);--accent:oklch(76% 0.13 125);--accent-strong:oklch(82% 0.12 125);--accent-soft:oklch(30% 0.04 125);--accent-border:oklch(40% 0.06 125);--on-accent:oklch(20% 0.025 120);--danger:oklch(72% 0.13 35);--danger-soft:oklch(29% 0.04 35);--warning:oklch(78% 0.12 75);--warning-soft:oklch(29% 0.04 75);--ring-track:oklch(34% 0.02 120);--shadow:0 16px 40px -28px oklch(5% 0.02 120 / 70%)}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-width:320px;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.6;padding-bottom:calc(100px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:disabled{cursor:not-allowed;opacity:.5}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.app{max-width:760px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px 32px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:46px;height:46px;flex:0 0 46px;border-radius:15px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:24px;overflow:hidden}
+.logo img{width:100%;height:100%;display:block;object-fit:cover}
+.brand h1{font-size:20px;font-weight:800;letter-spacing:-.01em;line-height:1.3;margin:0 0 2px}
+.brand p{font-size:12px;color:var(--muted);margin:0}
+.date{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:12px;font-weight:700;color:var(--accent-strong);white-space:nowrap}
+.section{display:none}
+.section.active{display:block;animation:page-in 180ms ease-out}
+@keyframes page-in{from{opacity:.7;transform:translateY(4px)}to{opacity:1;transform:none}}
+.intro{margin-bottom:18px}
+.intro small{display:inline-block;color:var(--accent-strong);font-size:13px;font-weight:800;margin-bottom:2px}
+.intro h2{font-size:clamp(26px,6vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.25;margin:6px 0 8px}
+.intro p{font-size:14px;color:var(--muted);line-height:1.8;margin:0;max-width:65ch}
+.muted{color:var(--muted);font-size:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.head h3{font-size:17px;font-weight:800;margin:0}
+.summary{display:grid;grid-template-columns:125px 1fr;gap:16px;align-items:center}
+.ring{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) 0deg,var(--ring-track) 0deg);position:relative}
+.ring:before{content:"";position:absolute;inset:10px;background:var(--surface);border-radius:50%}
+.ring div{z-index:1;text-align:center}
+.ring strong{display:block;font-size:24px;font-weight:800;line-height:1.1}
+.ring span{font-size:10px;color:var(--muted)}
+.big{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:4px 0}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+.mini,.macro{background:var(--surface-subtle);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px}
+.mini span,.macro span{display:block;font-size:11px;color:var(--muted)}
+.mini strong,.macro strong{display:block;margin-top:5px;font-size:17px;font-weight:800}
+.macros{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;border-radius:13px;padding:10px 16px;font-size:14px;font-weight:800;background:var(--accent);color:var(--on-accent);text-decoration:none;transition:background-color 150ms,transform 150ms,border-color 150ms}
+.btn:hover{background:var(--accent-strong)}
+.btn:active{transform:scale(.97)}
+.btn.light{background:var(--accent-soft);color:var(--accent-strong)}
+.btn.light:hover{background:var(--accent-border)}
+.btn.outline{background:var(--surface);border-color:var(--line);color:var(--accent-strong)}
+.btn.outline:hover{background:var(--surface-subtle);border-color:var(--accent-border)}
+.btn.danger{background:var(--danger-soft);color:var(--danger)}
+.btn:disabled{opacity:.5}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:700;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%;min-width:0;min-height:46px;border:1px solid var(--line);background:var(--surface);border-radius:13px;padding:11px 13px;color:var(--ink);font-size:16px;transition:border-color 150ms,box-shadow 150ms}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field textarea{min-height:88px;resize:vertical}
+.field select{padding-inline-start:30px;text-overflow:ellipsis}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+.meal{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.meal:last-child{border-bottom:0}
+.emoji{width:44px;height:44px;flex:0 0 44px;border-radius:14px;background:var(--accent-soft);display:grid;place-items:center;font-size:20px}
+.mealinfo{flex:1;min-width:0}
+.mealinfo b{font-size:15px;font-weight:700;overflow-wrap:anywhere}
+.mealinfo small{display:block;color:var(--muted);font-size:12px;margin-top:3px;overflow-wrap:anywhere}
+.mealval{text-align:left;font-size:15px;font-weight:800;white-space:nowrap}
+.mealval small{display:block;color:var(--muted);font-size:11px;font-weight:400}
+.empty{text-align:center;padding:24px 10px;color:var(--muted);font-size:14px;line-height:1.8}
+.notice{background:var(--warning-soft);color:var(--ink);padding:12px 14px;border-radius:var(--radius-sm);font-size:13px;line-height:1.8;margin-top:14px}
+.chat{white-space:pre-wrap;line-height:1.8;font-size:14px;background:var(--surface-subtle);border:1px solid var(--line);padding:14px;border-radius:var(--radius-sm);margin-top:14px}
+.hidden{display:none!important}
+.preview{max-width:100%;max-height:200px;border-radius:var(--radius-sm);margin-top:10px;object-fit:cover}
+.bottom{position:fixed;z-index:5;bottom:0;inset-inline:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:8px 6px calc(8px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);box-shadow:0 -10px 28px -24px var(--ink)}
+.nav{min-width:0;min-height:54px;padding:5px 2px;border:0;border-radius:14px;background:transparent;color:var(--muted);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:background-color 160ms,color 160ms,transform 160ms}
+.nav:active{transform:scale(.96)}
+.nav span{display:block;font-size:19px;line-height:1;margin-bottom:2px}
+.nav.active{background:var(--accent-soft);color:var(--accent-strong);font-weight:800}
+@media(max-width:390px){.summary{grid-template-columns:105px 1fr;gap:12px}.ring{width:102px;height:102px}.ring strong{font-size:21px}.big{font-size:20px}.card{padding:14px}.formgrid{gap:10px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style><style>
 #weeklySchedule .weekly-day{margin-bottom:14px}
 #weeklySchedule .weekly-day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
@@ -23,7 +107,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px;ma
 </style>
 </head>
 <body><main class="app">
-<header><div class="brand"><div class="logo">🥗</div><div><h1>مساعدي الغذائي</h1><p>خطوة صغيرة، صحة أفضل</p></div></div><div class="date" id="datePill"></div></header>
+<header><div class="brand"><div class="logo"><img src="./icons/nassq.svg" alt=""></div><div><h1>مساعدي الغذائي</h1><p>خطوة صغيرة، صحة أفضل</p></div></div><div class="date" id="datePill"></div></header>
 <section id="home" class="section active"><div class="intro"><small>رحلتك الصحية تبدأ من هنا</small><h2>أهلًا بك 👋</h2><p>سجّل وجباتك وتابع تقدمك نحو أهدافك اليومية.</p></div>
 <div class="card"><div class="head"><h3>ملخص اليوم</h3><span class="muted">السعرات الحرارية</span></div><div class="summary"><div class="ring" id="ring"><div><strong id="calEaten">0</strong><span>سعرة مستهلكة</span></div></div><div><div class="muted">هدفك اليومي</div><div class="big" id="calGoalText">2000</div><div class="muted">سعرة حرارية</div><div class="muted" style="margin-top:10px">المتبقي لك</div><div class="big" id="calLeft">2000</div><div class="muted">سعرة حرارية</div></div></div><div class="grid2"><div class="mini"><span>💪 البروتين</span><strong><b id="proteinEaten">0</b> غ</strong><span>من <b id="proteinGoalText">150</b> غ</span></div><div class="mini"><span>🍽️ وجبات اليوم</span><strong id="mealCount">0</strong><span>وجبة مسجلة</span></div></div></div>
 <div class="card"><div class="head"><h3>المغذيات اليوم</h3><span class="muted">حسب البيانات المتاحة</span></div><div class="macros"><div class="macro"><span>البروتين</span><strong id="macroP">0 غ</strong></div><div class="macro"><span>الكربوهيدرات</span><strong id="macroC">0 غ</strong></div><div class="macro"><span>الدهون</span><strong id="macroF">0 غ</strong></div></div></div>
@@ -39,20 +123,38 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px;ma
 <section id="goals" class="section"><div class="intro"><small>إعداداتك الشخصية</small><h2>الأهداف الغذائية</h2><p>غيّر أهدافك اليومية.</p></div><div class="card"><form id="goalsForm"><div class="formgrid"><div class="field"><label for="goalCalories">السعرات اليومية</label><input id="goalCalories" type="number" min="1" required></div><div class="field"><label for="goalProtein">البروتين اليومي (غ)</label><input id="goalProtein" type="number" min="1" required></div></div><div class="actions"><button class="btn" type="submit">حفظ الأهداف</button></div></form></div><div class="card"><div class="head"><h3>التقارير</h3></div><div class="field"><label for="reportPeriod">الفترة</label><select id="reportPeriod"><option value="day">اليوم</option><option value="week">آخر 7 أيام</option><option value="month">آخر 30 يومًا</option></select></div><div id="reportSummary" style="margin-top:14px;line-height:2"></div></div></section>
 
 <section id="weekly" class="section"><div class="intro"><small>مساحة مشتركة</small><h2>الجدول الأسبوعي الموحد</h2><p>كل ما تحفظه هنا يظهر في جدولي الأسبوعي أيضًا.</p></div><style>
-.shared-schedule{direction:rtl;margin:18px 0;padding:18px;border:1px solid var(--border,#e4e7df);border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(246,248,242,.96));box-shadow:0 12px 32px rgba(24,35,24,.07);color:var(--text,#202a22)}
-.shared-schedule *{box-sizing:border-box}.shared-schedule .ss-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
-.shared-schedule .ss-eyebrow{font-size:.75rem;letter-spacing:.04em;color:#9a7631;font-weight:800}.shared-schedule h2{font-size:1.25rem;margin:4px 0}.shared-schedule .ss-sub{font-size:.88rem;color:#778076;margin:0}
+.shared-schedule{direction:rtl;margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--surface);box-shadow:var(--shadow);color:var(--ink)}
+.shared-schedule *{box-sizing:border-box}
+.shared-schedule .ss-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
+.shared-schedule .ss-eyebrow{font-size:.72rem;letter-spacing:.06em;color:var(--accent-strong);font-weight:800}
+.shared-schedule h2{font-size:1.25rem;font-weight:800;margin:4px 0}
+.shared-schedule h3{font-weight:800}
+.shared-schedule .ss-sub{font-size:.88rem;color:var(--muted);margin:0}
 .shared-schedule .ss-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:16px 0}
-.shared-schedule .ss-daybtn{border:1px solid #e0e5dc;border-radius:13px;background:#fff;padding:9px 2px;color:#495348;font:inherit;font-size:.77rem;min-width:0}
-.shared-schedule .ss-daybtn strong{display:block;font-size:1rem;margin-top:4px}.shared-schedule .ss-daybtn.active{background:#263b2d;color:#fff;border-color:#263b2d;box-shadow:0 5px 12px #263b2d22}
-.shared-schedule .ss-summary{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.shared-schedule .ss-chip{background:#eef2e9;color:#4c5e4d;padding:7px 10px;border-radius:999px;font-size:.8rem}
-.shared-schedule .ss-item{display:flex;gap:11px;align-items:flex-start;padding:13px;margin:9px 0;border:1px solid #e7ebe3;border-radius:16px;background:#fff}
-.shared-schedule .ss-time{min-width:64px;color:#8b6a2c;font-weight:800;font-size:.9rem;padding-top:2px}.shared-schedule .ss-itembody{flex:1;min-width:0}.shared-schedule .ss-title{font-weight:800;color:#26372b}.shared-schedule .ss-details{font-size:.82rem;color:#788176;margin-top:5px;line-height:1.55}.shared-schedule .ss-kind{font-size:.72rem;display:inline-block;margin-top:7px;padding:4px 8px;border-radius:999px;background:#f4f0e5;color:#80652e}
-.shared-schedule .ss-del{border:0;border-radius:9px;background:#f8ece9;color:#a14e42;padding:7px 9px;font:inherit;font-size:.8rem}
-.shared-schedule .ss-addbox{border-top:1px solid #e7ebe3;margin-top:16px;padding-top:15px}.shared-schedule .ss-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.shared-schedule input,.shared-schedule select,.shared-schedule textarea{width:100%;min-width:0;padding:11px;border:1px solid #dce2d7;border-radius:12px;background:#fff;color:#253329;font:inherit;font-size:.9rem}.shared-schedule .ss-full{grid-column:1/-1}.shared-schedule .ss-save{border:0;border-radius:12px;background:#b58a3a;color:#fff;font:inherit;font-weight:800;padding:12px}
-.shared-schedule .ss-status{font-size:.82rem;color:#738073;min-height:1.2em;margin:10px 0}.shared-schedule .ss-auth{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.shared-schedule .ss-auth button{border:0;border-radius:11px;background:#263b2d;color:white;padding:11px;font:inherit}.shared-schedule .ss-empty{padding:18px;text-align:center;border:1px dashed #dce2d7;border-radius:15px;color:#7d877a}
+.shared-schedule .ss-daybtn{border:1px solid var(--line);border-radius:13px;background:var(--surface-subtle);padding:9px 2px;color:var(--muted);font:inherit;font-size:.77rem;min-width:0}
+.shared-schedule .ss-daybtn strong{display:block;font-size:1rem;margin-top:4px;color:var(--ink)}
+.shared-schedule .ss-daybtn.active{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.shared-schedule .ss-daybtn.active strong{color:var(--on-accent)}
+.shared-schedule .ss-summary{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.shared-schedule .ss-chip{background:var(--accent-soft);color:var(--accent-strong);padding:7px 10px;border-radius:999px;font-size:.8rem;font-weight:700}
+.shared-schedule .ss-item{display:flex;gap:11px;align-items:flex-start;padding:13px;margin:9px 0;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface-subtle)}
+.shared-schedule .ss-time{min-width:64px;color:var(--accent-strong);font-weight:800;font-size:.9rem;padding-top:2px}
+.shared-schedule .ss-itembody{flex:1;min-width:0}
+.shared-schedule .ss-title{font-weight:800;color:var(--ink)}
+.shared-schedule .ss-details{font-size:.82rem;color:var(--muted);margin-top:5px;line-height:1.55}
+.shared-schedule .ss-kind{font-size:.72rem;display:inline-block;margin-top:7px;padding:4px 8px;border-radius:999px;background:var(--warning-soft);color:var(--warning);font-weight:700}
+.shared-schedule .ss-del{border:0;border-radius:10px;background:var(--danger-soft);color:var(--danger);padding:7px 10px;font:inherit;font-size:.8rem;font-weight:700}
+.shared-schedule .ss-addbox{border-top:1px solid var(--line);margin-top:16px;padding-top:15px}
+.shared-schedule .ss-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.shared-schedule input,.shared-schedule select,.shared-schedule textarea{width:100%;min-width:0;min-height:46px;padding:11px;border:1px solid var(--line);border-radius:13px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
+.shared-schedule .ss-full{grid-column:1/-1}
+.shared-schedule .ss-save{min-height:46px;border:0;border-radius:13px;background:var(--accent);color:var(--on-accent);font:inherit;font-weight:800;padding:12px}
+.shared-schedule .ss-save:hover{background:var(--accent-strong)}
+.shared-schedule .ss-status{font-size:.82rem;color:var(--muted);min-height:1.2em;margin:10px 0}
+.shared-schedule .ss-auth{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.shared-schedule .ss-auth button{min-height:44px;border:0;border-radius:13px;background:var(--accent-strong);color:var(--on-accent);padding:11px;font:inherit;font-weight:700}
+.shared-schedule .ss-empty{padding:18px;text-align:center;border:1px dashed var(--line);border-radius:var(--radius-md);color:var(--muted)}
 @media(max-width:390px){.shared-schedule{padding:13px}.shared-schedule .ss-daybtn{font-size:.68rem}.shared-schedule .ss-daybtn strong{font-size:.9rem}.shared-schedule .ss-item{padding:10px;gap:7px}.shared-schedule .ss-time{min-width:53px;font-size:.8rem}}
-@media(prefers-color-scheme:dark){.shared-schedule{background:#1b241d;color:#edf2e8;border-color:#3c493d}.shared-schedule .ss-daybtn,.shared-schedule .ss-item,.shared-schedule input,.shared-schedule select,.shared-schedule textarea{background:#242f26;color:#edf2e8;border-color:#435045}.shared-schedule .ss-title{color:#edf2e8}.shared-schedule .ss-details{color:#b7c2b4}.shared-schedule .ss-chip{background:#303e31;color:#dce7d7}}
 </style>
 <div class="shared-schedule" id="shared-schedule">
  <div class="ss-head"><div><div class="ss-eyebrow">YOUR WEEK · جدولك الموحد</div><h2>جدولك الأسبوعي</h2><p class="ss-sub">وجباتك ومهامك في مكان واحد، ومتزامنة بين التطبيقين.</p></div><span aria-hidden="true" style="font-size:1.7rem">✦</span></div>
@@ -164,7 +266,7 @@ async function editMeal(id){const m=(await allMeals()).find(x=>x.id===Number(id)
 async function removeMeal(id){if(!confirm('حذف الوجبة نهائيًا؟ ستُحذف من السحابة أيضًا عند المزامنة.'))return;const m=(await allMeals()).find(x=>x.id===Number(id));if(m&&m.clientId){const list=(await getSetting('deletedMeals'))||[];if(!list.includes(m.clientId))await setSetting('deletedMeals',[...list,m.clientId])}await deleteMeal(id);try{const c=window.sharedScheduleClient;const {data:{user}}=await c.auth.getUser();if(user&&m?.clientId)await c.from('shared_schedule').delete().eq('id',String(m.clientId)).eq('user_id',user.id);window.dispatchEvent(new Event('shared-schedule-refresh'))}catch(e){console.warn('Shared schedule delete failed',e)}await refresh()}
 function mealHTML(m){return `<div class="meal"><div class="emoji">${m.type==='الفطور'?'🍳':m.type==='الغداء'?'🍚':m.type==='العشاء'?'🥗':m.type==='مشروب'?'🥤':'🍎'}</div><div class="mealinfo"><b>${escapeHTML(m.name)}</b><small>${escapeHTML(m.type)} · ${escapeHTML(dateText(m.date))}${m.ingredients?' · '+escapeHTML(m.ingredients):''}</small></div><div class="mealval">${Math.round(m.calories)}<small>سعرة · ${Number(m.protein)||0}غ بروتين</small><div class="actions" style="justify-content:flex-end;margin-top:6px"><button class="btn outline" style="padding:5px 7px;font-size:11px" data-edit="${m.id}">تعديل</button><button class="btn danger" style="padding:5px 7px;font-size:11px" data-del="${m.id}">حذف</button></div></div></div>`}
 function bindButtons(root){root.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{if(root.id==='weeklySchedule')window.__weeklyReturn=true;editMeal(b.dataset.edit)});root.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>removeMeal(b.dataset.del))}
-async function refresh(){const meals=await allMeals(),list=meals.filter(m=>dayOf(m.date)===today()),sum=k=>list.reduce((a,m)=>a+(Number(m[k])||0),0),c=sum('calories'),p=sum('protein'),carb=sum('carbs'),fat=sum('fat');$('calEaten').textContent=Math.round(c);$('calGoalText').textContent=settings.calories;$('calLeft').textContent=Math.max(0,Math.round(settings.calories-c));$('proteinEaten').textContent=Math.round(p*10)/10;$('proteinGoalText').textContent=settings.protein;$('mealCount').textContent=list.length;$('macroP').textContent=`${Math.round(p*10)/10} غ`;$('macroC').textContent=`${Math.round(carb*10)/10} غ`;$('macroF').textContent=`${Math.round(fat*10)/10} غ`;$('ring').style.background=`conic-gradient(var(--g) ${Math.min(100,c/settings.calories*100)*3.6}deg,#e7ece4 0deg)`;$('todayMeals').innerHTML=list.length?list.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(mealHTML).join(''):'<div class="empty">ما سجلت أي وجبة اليوم بعد.<br>اضغط «إضافة وجبة» لتبدأ.</div>';bindButtons($('todayMeals'));renderHistory();renderReport();renderWeekly()}
+async function refresh(){const meals=await allMeals(),list=meals.filter(m=>dayOf(m.date)===today()),sum=k=>list.reduce((a,m)=>a+(Number(m[k])||0),0),c=sum('calories'),p=sum('protein'),carb=sum('carbs'),fat=sum('fat');$('calEaten').textContent=Math.round(c);$('calGoalText').textContent=settings.calories;$('calLeft').textContent=Math.max(0,Math.round(settings.calories-c));$('proteinEaten').textContent=Math.round(p*10)/10;$('proteinGoalText').textContent=settings.protein;$('mealCount').textContent=list.length;$('macroP').textContent=`${Math.round(p*10)/10} غ`;$('macroC').textContent=`${Math.round(carb*10)/10} غ`;$('macroF').textContent=`${Math.round(fat*10)/10} غ`;$('ring').style.background=`conic-gradient(var(--g) ${Math.min(100,c/settings.calories*100)*3.6}deg,var(--ring-track) 0deg)`;$('todayMeals').innerHTML=list.length?list.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(mealHTML).join(''):'<div class="empty">ما سجلت أي وجبة اليوم بعد.<br>اضغط «إضافة وجبة» لتبدأ.</div>';bindButtons($('todayMeals'));renderHistory();renderReport();renderWeekly()}
 window.addEventListener('shared-schedule-updated',()=>refresh());
 function renderHistory(){if(!db)return;allMeals().then(list=>{const d=$('historyDate').value,t=$('historySearch').value.trim().toLowerCase(),filtered=list.filter(m=>(!d||dayOf(m.date)===d)&&(!t||`${m.name} ${m.ingredients||''} ${m.type}`.toLowerCase().includes(t))).sort((a,b)=>new Date(b.date)-new Date(a.date));$('historyResults').innerHTML=filtered.length?filtered.map(mealHTML).join(''):'<div class="empty">لا توجد وجبات مطابقة.</div>';bindButtons($('historyResults'))})}
 $('historyDate').value=today();$('historyDate').onchange=renderHistory;$('historySearch').oninput=renderHistory;

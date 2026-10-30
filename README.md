@@ -7,6 +7,10 @@
 - `manifest.webmanifest`: تعريف تطبيق PWA.
 - `sw.js`: تخزين ملفات الواجهة للعمل عند انقطاع الإنترنت بعد أول تحميل ناجح.
 - `icons/`: أيقونات التطبيق.
+- `fonts/`: خط Tajawal (SIL Open Font License، انظر `fonts/tajawal-LICENSE.txt`).
+
+## التصميم
+متغيرات الألوان والمسافات والزوايا موجودة في `:root` داخل `index.html`، وتدعم الوضع الفاتح والداكن (حسب إعداد الجهاز أو `data-theme`). التصميم مستوحى من نظام نَسّق، والشعار مؤقت حتى يُعتمد الاسم النهائي.
 
 ## النشر على GitHub Pages
 من إعدادات المستودع: Settings → Pages → Deploy from a branch → `main` → `/(root)` → Save.
