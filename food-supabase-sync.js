@@ -26,7 +26,7 @@
     b.type = "button";
     b.style.cssText =
       "padding:11px 13px;margin:5px;border:0;border-radius:10px;" +
-      "background:#315c45;color:white;font:inherit;cursor:pointer";
+      "background:var(--accent);color:var(--on-accent);font:inherit;cursor:pointer";
     b.addEventListener("click", handler);
     return b;
   }
@@ -40,7 +40,8 @@
       : "email";
     node.style.cssText =
       "box-sizing:border-box;width:100%;padding:12px;margin:6px 0;" +
-      "border:1px solid #dfe5dc;border-radius:10px;font:inherit";
+      "border:1px solid var(--line);border-radius:10px;background:var(--surface);" +
+      "color:var(--ink);font:inherit";
     return node;
   }
 
@@ -320,10 +321,10 @@
     panel.dir = "rtl";
     panel.style.cssText =
       "max-width:760px;margin:16px auto;padding:16px;" +
-      "border:1px solid #e7ebe3;border-radius:16px;" +
-      "background:white;color:#202a22;font-family:inherit";
+      "border:1px solid var(--line);border-radius:16px;" +
+      "background:var(--surface);color:var(--ink);font-family:inherit";
 
-    const title = el("h3", "☁️ حساب ومزامنة مساعدي الغذائي");
+    const title = el("h3", "☁️ حساب ومزامنة صحن");
     const info = el("p", "تسجيل الدخول يحفظ جلستك على هذا الجهاز.");
     const state = el("p", "جارٍ التحقق من الجلسة...");
     state.id = "food-sync-status";
@@ -398,12 +399,20 @@
         : "سجّل الدخول أو أنشئ حسابًا للبدء."
     );
 
-    client.auth.onAuthStateChange((_event, sessionNow) => {
-      status(
-        sessionNow
-          ? "مسجّل الدخول: " + sessionNow.user.email
-          : "سجّل الدخول أو أنشئ حسابًا للبدء."
-      );
+    // عند فتح التطبيق بجلسة محفوظة أو نجاح تسجيل الدخول، ابدأ المزامنة تلقائيًا.
+    if (session) setTimeout(() => sync(), 0);
+
+    client.auth.onAuthStateChange((event, sessionNow) => {
+      if (!sessionNow) {
+        status("سجّل الدخول أو أنشئ حسابًا للبدء.");
+        return;
+      }
+      if (event === "SIGNED_IN") {
+        // التأجيل يمنع بدء طلبات Supabase داخل callback المصادقة نفسه.
+        setTimeout(() => sync(), 0);
+      } else if (event === "INITIAL_SESSION") {
+        status("مسجّل الدخول: " + sessionNow.user.email);
+      }
     });
   }
 
