@@ -232,9 +232,14 @@ function draw(){
 }
 async function syncMealsToLocal(){
  if(!location.pathname.includes('my-food-assistant'))return;
+ let db;
  try{
-  const db=await new Promise((resolve,reject)=>{const req=indexedDB.open('my-food-assistant-db',1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});
-  if(!db.objectStoreNames.contains('meals'))return;
+  if(!user?.id)return;
+  db=await new Promise((resolve,reject)=>{const req=indexedDB.open('my-food-assistant-db',1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});
+  if(!db.objectStoreNames.contains('meals')||!db.objectStoreNames.contains('settings')){db.close();return}
+  // Never reconcile or delete local meals until this device has explicitly synced with this account.
+  const accountSetting=await new Promise((resolve,reject)=>{const req=db.transaction('settings','readonly').objectStore('settings').get('syncUserId');req.onsuccess=()=>resolve(req.result?.value||null);req.onerror=()=>reject(req.error)});
+  if(accountSetting!==user.id){db.close();return}
   const all=await new Promise((resolve,reject)=>{const req=db.transaction('meals','readonly').objectStore('meals').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});
   const byId=new Map(all.filter(m=>m.clientId).map(m=>[String(m.clientId),m]));
   const remoteMeals=rows.filter(r=>r.kind==='meal'),currentIds=new Set(remoteMeals.map(r=>String(r.id)));
@@ -264,8 +269,10 @@ async function syncMealsToLocal(){
     };
    }
   };
-  tx.oncomplete=()=>window.dispatchEvent(new Event('shared-schedule-updated'));
- }catch(e){console.warn('Shared meal local sync failed',e)}
+  tx.oncomplete=()=>{db.close();window.dispatchEvent(new Event('shared-schedule-updated'))};
+  tx.onerror=()=>{db.close();console.warn('Shared meal local sync transaction failed',tx.error)};
+  tx.onabort=()=>db.close();
+ }catch(e){if(db)db.close();console.warn('Shared meal local sync failed',e)}
 }
 async function pull(){if(!user)return;status('جارٍ تطبيق الحذف المعلّق وتحميل الجدول المشترك…');try{const localDb=await new Promise((resolve,reject)=>{const req=indexedDB.open('my-food-assistant-db',1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});if(localDb.objectStoreNames.contains('settings')){const setting=await new Promise((resolve,reject)=>{const req=localDb.transaction('settings','readonly').objectStore('settings').get('deletedMeals');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});const tombstones=Array.isArray(setting?.value)?setting.value:[];if(tombstones.length){const {error:deleteError}=await client.from(TABLE).delete().eq('user_id',user.id).in('id',tombstones);if(deleteError)throw new Error('تعذّر تطبيق حذف الوجبات المعلّق: '+deleteError.message);await new Promise((resolve,reject)=>{const req=localDb.transaction('settings','readwrite').objectStore('settings').put({key:'deletedMeals',value:[]});req.onsuccess=()=>resolve();req.onerror=()=>reject(req.error)});}}}catch(e){status(e.message||'تعذّر تطبيق الحذف المعلّق.');return}const {data,error}=await client.from(TABLE).select('*').eq('user_id',user.id).order('starts_at',{ascending:true});if(error){status('تعذر تحميل الجدول. تأكد من تنفيذ ملف shared_schedule.sql في Supabase: '+error.message);return}rows=data||[];await syncMealsToLocal();draw();$('ss-main').hidden=false;$('ss-auth-area').innerHTML='<p class="ss-sub">متصل بالحساب: '+esc(user.email||'')+' · مزامنة مباشرة من السحابة</p><button id="ss-refresh" type="button" class="ss-save" style="width:100%;margin-top:8px">تحديث الجدول</button>';$('ss-refresh').onclick=pull;status('الجدول المشترك جاهز.')}
 async function boot(){if(!client)return;const {data,error}=await client.auth.getSession();if(error){status(error.message);return}user=data.session?.user||null;if(!user){$('ss-main').hidden=true;showAuth();return}await pull()}
