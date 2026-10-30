@@ -27,7 +27,6 @@ create policy "Users manage own meals" on public.meals
   using ((select auth.uid()) = user_id)
   with check ((select auth.uid()) = user_id);
 grant select, insert, update, delete on public.meals to authenticated;
-grant usage, select on sequence public.meals_id_seq to authenticated;
 
 create table if not exists public.shared_schedule (
   id uuid primary key default gen_random_uuid(),
