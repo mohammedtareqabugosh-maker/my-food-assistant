@@ -76,7 +76,7 @@
         <button class="sahn-account-danger" type="button" data-account-logout ${busy?'disabled':''}>تسجيل الخروج</button>`;
       const themeChoice = body.querySelector('#sahnThemeChoice');
       themeChoice.value = localStorage.getItem('sahn-theme-choice') || 'system';
-      themeChoice.onchange = () => applyTheme(themeChoice.value);
+      themeChoice.onchange = () => { applyTheme(themeChoice.value); saveCloudSettings({theme:themeChoice.value}); };
       body.querySelector('[data-account-refresh]').onclick = async () => {
         busy = true; message = 'جارٍ بدء مزامنة سجل الوجبات…'; render();
         window.dispatchEvent(new Event('food-meal-changed'));
@@ -118,7 +118,7 @@
         busy = false;
         if (mode === 'signup') setMessage(result.data?.session ? 'تم إنشاء الحساب وتسجيل الدخول.' : 'تم إرسال طلب إنشاء الحساب. افحص بريدك لتأكيده ثم ارجع لتسجيل الدخول.');
         else if (mode === 'reset') setMessage('إذا كان البريد مسجّلًا، ستصلك رسالة لإعادة تعيين كلمة المرور.');
-        else { currentUser = result.data?.user || null; setMessage('تم تسجيل الدخول بنجاح.'); }
+        else { currentUser = result.data?.user || null; setMessage('تم تسجيل الدخول بنجاح.'); syncAccountSettings(currentUser); }
       } catch (e) { busy=false; setMessage(e?.message || 'تعذّر إكمال العملية. حاول مرة أخرى.', true); }
     };
     body.querySelector('[data-account-google]')?.addEventListener('click', async () => {
@@ -133,12 +133,65 @@
     const {data,error: sessionError} = await client.auth.getSession();
     currentUser = sessionError ? null : data.session?.user || null;
     render();
+    if (currentUser) syncAccountSettings(currentUser);
   }
   function applyTheme(choice) {
     localStorage.setItem('sahn-theme-choice', choice);
     const dark = choice === 'dark' || (choice === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+  }
+  async function readLocalGoals() {
+    try {
+      const db = await new Promise((resolve, reject) => {
+        const req = indexedDB.open('my-food-assistant-db', 1);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      if (!db.objectStoreNames.contains('settings')) { db.close(); return null; }
+      const row = await new Promise((resolve, reject) => {
+        const req = db.transaction('settings', 'readonly').objectStore('settings').get('goals');
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+      db.close();
+      return row?.value ? {calories:Number(row.value.calories)||2000, protein:Number(row.value.protein)||150} : null;
+    } catch (_) { return null; }
+  }
+  async function syncAccountSettings(user) {
+    if (!client || !user) return;
+    try {
+      const {data, error: userError} = await client.auth.getUser();
+      if (userError) throw userError;
+      const fresh = data.user || user;
+      const cloud = fresh.user_metadata?.sahn_settings;
+      if (cloud && typeof cloud === 'object') {
+        if (cloud.theme) applyTheme(cloud.theme);
+        if (cloud.goals && Number(cloud.goals.calories) > 0 && Number(cloud.goals.protein) > 0) {
+          window.dispatchEvent(new CustomEvent('sahn-cloud-goals', {detail:{calories:Number(cloud.goals.calories),protein:Number(cloud.goals.protein)}}));
+        }
+      } else {
+        const goals = await readLocalGoals() || {calories:2000,protein:150};
+        const theme = localStorage.getItem('sahn-theme-choice') || 'system';
+        const {error: updateError} = await client.auth.updateUser({data:{sahn_settings:{goals,theme,updatedAt:new Date().toISOString()}}});
+        if (updateError) throw updateError;
+      }
+    } catch (e) {
+      console.warn('Sahn account settings sync:', e?.message || e);
+      if (overlay.classList.contains('open')) setMessage('تم تسجيل الدخول، لكن تعذرت مزامنة الإعدادات: ' + (e?.message || 'خطأ اتصال'), true);
+    }
+  }
+  async function saveCloudSettings(patch) {
+    if (!client || !currentUser) return;
+    try {
+      const {data} = await client.auth.getUser();
+      const user = data?.user || currentUser;
+      const existing = user.user_metadata?.sahn_settings || {};
+      const goals = await readLocalGoals() || existing.goals || {calories:2000,protein:150};
+      const theme = patch.theme || existing.theme || localStorage.getItem('sahn-theme-choice') || 'system';
+      const {error: updateError} = await client.auth.updateUser({data:{sahn_settings:{...existing,...patch,goals,theme,updatedAt:new Date().toISOString()}}});
+      if (updateError) throw updateError;
+    } catch (e) { console.warn('Sahn account settings save:', e?.message || e); }
   }
   applyTheme(localStorage.getItem('sahn-theme-choice') || 'system');
   trigger.addEventListener('click', () => { overlay.classList.add('open'); trigger.setAttribute('aria-expanded','true'); refreshUser(); });
@@ -147,5 +200,6 @@
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && overlay.classList.contains('open')) closeBtn.click(); });
   window.addEventListener('shared-schedule-client-ready', setClient);
   window.addEventListener('food-sync-complete', () => { if (overlay.classList.contains('open') && currentUser) setMessage('اكتملت مزامنة سجل الوجبات.'); });
+  window.addEventListener('sahn-goals-saved', event => { if (currentUser) saveCloudSettings({goals:event.detail}); });
   if (client) refreshUser(); else render();
 })();
