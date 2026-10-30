@@ -157,6 +157,7 @@
       const finalLocal = await allLocal(db);
       if (finalLocal.length) {
         const upload = finalLocal.map(meal => toRemote(meal, user.id));
+        const uploadByClientId = new Map(upload.map(row => [row.client_id, row]));
         const {error} = await client.from(TABLE).upsert(upload, {onConflict: "user_id,client_id"});
         if (error) throw new Error("تعذّر رفع سجل الوجبات: " + error.message);
 
@@ -164,11 +165,11 @@
           id: String(meal.clientId), user_id: user.id, kind: "meal",
           title: String(meal.name || "وجبة"),
           details: String(meal.ingredients || meal.notes || ""),
-          starts_at: upload.find(row => row.client_id === String(meal.clientId))?.meal_date,
+          starts_at: uploadByClientId.get(String(meal.clientId))?.meal_date,
           meal_type: String(meal.type || ""), calories: Number(meal.calories) || 0,
           protein: Number(meal.protein) || 0, carbs: Number(meal.carbs) || 0,
           fat: Number(meal.fat) || 0, ingredients: String(meal.ingredients || ""),
-          source_app: "my-food-assistant", updated_at: meal.updatedAt || new Date().toISOString()
+          source_app: "my-food-assistant", updated_at: uploadByClientId.get(String(meal.clientId))?.updated_at
         }));
         const {error: scheduleError} = await client.from("shared_schedule")
           .upsert(scheduleRows, {onConflict: "id"});
