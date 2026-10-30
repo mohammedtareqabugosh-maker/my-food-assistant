@@ -195,6 +195,18 @@
           throw new Error("تعذّر حذف الوجبات من السحابة: " + delError.message);
         }
 
+        // حذف الموعد المقابل أيضًا؛ معرّف الموعد الموحد يساوي client_id.
+        // إبقاء علامة الحذف حتى تنجح العمليتان يمنع عودة الوجبة في الجدول.
+        const { error: scheduleDeleteError } = await client
+          .from("shared_schedule")
+          .delete()
+          .eq("user_id", user.id)
+          .in("id", tombstones);
+
+        if (scheduleDeleteError) {
+          throw new Error("حُذفت الوجبة من سجل الغذاء لكن تعذّر حذفها من الجدول الموحد: " + scheduleDeleteError.message);
+        }
+
         const syncedNow = await getSettingValue("syncedMeals");
         await setSettingValue(
           "syncedMeals",
@@ -222,10 +234,27 @@
 
       // 3) وجبة كانت متزامنة ثم اختفت من السحابة = حُذفت من التطبيق الآخر.
       const syncedBefore = new Set(await getSettingValue("syncedMeals"));
+      const localBeforeDownload = await getLocalMeals();
+      const missingFromCloud = localBeforeDownload.filter(
+        m => m.clientId && syncedBefore.has(m.clientId) && !remoteIds.has(m.clientId)
+      );
       let removed = 0;
 
-      for (const m of await getLocalMeals()) {
-        if (m.clientId && syncedBefore.has(m.clientId) && !remoteIds.has(m.clientId)) {
+      // إذا حُذفت وجبة من جهاز آخر، احذف الموعد المقابل قبل حذف النسخة المحلية.
+      // إذا فشل حذف الموعد، تتوقف المزامنة وتبقى قائمة المزامنة السابقة لإعادة المحاولة.
+      const missingIds = missingFromCloud.map(m => m.clientId);
+      if (missingIds.length) {
+        const { error: scheduleDeleteError } = await client
+          .from("shared_schedule")
+          .delete()
+          .eq("user_id", user.id)
+          .in("id", missingIds);
+
+        if (scheduleDeleteError) {
+          throw new Error("تعذّر مزامنة حذف الوجبات من الجدول الموحد: " + scheduleDeleteError.message);
+        }
+
+        for (const m of missingFromCloud) {
           await deleteLocalMealById(m.id);
           removed++;
         }
