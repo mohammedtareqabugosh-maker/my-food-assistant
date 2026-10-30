@@ -11,7 +11,7 @@
   "theme_color": "#344b28",
   "icons": [
     {
-      "src": "./icons/nassq.svg",
+      "src": "./icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
