@@ -1,10 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-<title id="title">صحن</title><desc id="desc">شعار عربي بسيط لصحن، بخطوط زيتونية وكريمية ولمسة طماطم دافئة</desc>
-<rect width="512" height="512" rx="112" fill="#354b28"/>
-<path d="M120 196c8 89 65 137 136 137s128-48 136-137" fill="none" stroke="#f4f3eb" stroke-width="17" stroke-linecap="round"/>
-<path d="M150 196c13 59 48 91 106 91s93-32 106-91" fill="none" stroke="#a9bf87" stroke-width="9" stroke-linecap="round"/>
-<path d="M256 96c-5 29-19 46-42 52 3-27 17-44 42-52Z" fill="#c39a54"/>
-<path d="M256 101v58" stroke="#c39a54" stroke-width="8" stroke-linecap="round"/>
-<circle cx="333" cy="133" r="10" fill="#b95d48"/>
-<text x="256" y="412" text-anchor="middle" direction="rtl" font-family="Tahoma,Arial,sans-serif" font-size="72" font-weight="800" fill="#f4f3eb">صحن</text>
+<title id="title">صحن — مساعدي الغذائي</title><desc id="desc">وعاء غذائي أخضر مع ورقتين وشوكة ولمسة ذهبية</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8f4e9"/><stop offset="1" stop-color="#e8ead9"/></linearGradient><linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#63834a"/><stop offset="1" stop-color="#24472f"/></linearGradient></defs>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/>
+<path d="M111 250c13 100 70 151 145 151s132-51 145-151Z" fill="url(#green)"/>
+<path d="M143 272c23 68 62 99 113 99" fill="none" stroke="#dce6cc" stroke-width="10" stroke-linecap="round"/>
+<path d="M211 217c-56-8-91-45-92-103 56 7 91 44 92 103Z" fill="#6f914b"/>
+<path d="M222 222c2-55 30-91 80-105 2 54-27 90-80 105Z" fill="#315c3b"/>
+<path d="M326 118v92m-24-92v31m48-31v31m-24 61-27 49" fill="none" stroke="#315c3b" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="349" cy="93" r="19" fill="#c89c45"/>
+<text x="256" y="465" text-anchor="middle" direction="rtl" font-family="Tahoma,Arial,sans-serif" font-size="57" font-weight="800" fill="#24472f">صحن</text>
 </svg>
