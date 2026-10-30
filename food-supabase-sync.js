@@ -86,6 +86,7 @@
     if (busy || !client) return;
     busy = true;
     let db;
+    let refreshSharedSchedule = false;
     try {
       const {data: {user}, error: authError} = await client.auth.getUser();
       if (authError) throw authError;
@@ -175,10 +176,7 @@
       }
       await writeSetting(db, "syncedMeals", finalLocal.map(meal => meal.clientId).filter(Boolean));
       await writeSetting(db, "syncUserId", user.id);
-      if (previousUserId !== user.id) {
-        // Only refresh the shared schedule after account consent and successful sync.
-        window.dispatchEvent(new Event("shared-schedule-refresh"));
-      }
+      refreshSharedSchedule = previousUserId !== user.id;
       status("اكتملت المزامنة: " + added + " وجبات جديدة" + (updated ? "، وتحديث " + updated : "") + ".");
       window.dispatchEvent(new Event("food-sync-complete"));
     } catch (error) {
@@ -187,6 +185,10 @@
     } finally {
       if (db) db.close();
       busy = false;
+      if (refreshSharedSchedule) {
+        // Refresh only after this sync releases the lock to avoid swallowing the follow-up sync event.
+        window.dispatchEvent(new Event("shared-schedule-refresh"));
+      }
     }
   }
 
