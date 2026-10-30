@@ -427,12 +427,23 @@
         : "سجّل الدخول أو أنشئ حسابًا للبدء."
     );
 
+    // Run a reconciliation on launch so deleted meals are not restored from cloud.
+    if (session) sync().catch(error => console.warn("Initial food sync failed", error));
+
+    // A shared-schedule pull may remove meals locally; immediately reconcile cloud state.
+    window.addEventListener("shared-schedule-updated", () => {
+      sync().catch(error => console.warn("Schedule-triggered food sync failed", error));
+    });
+
     client.auth.onAuthStateChange((_event, sessionNow) => {
       status(
         sessionNow
           ? "مسجّل الدخول: " + sessionNow.user.email
           : "سجّل الدخول أو أنشئ حسابًا للبدء."
       );
+      if (sessionNow) {
+        setTimeout(() => sync().catch(error => console.warn("Auth-triggered food sync failed", error)), 0);
+      }
     });
   }
 
