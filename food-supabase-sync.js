@@ -88,11 +88,11 @@
       db = await openDB();
       if (!db.objectStoreNames.contains("meals")) throw new Error("لم يتم العثور على سجل الوجبات المحلي.");
       const previousUserId = await readSetting(db, "syncUserId");
-      if (previousUserId && previousUserId !== user.id) {
-        const approved = window.confirm("هذا الجهاز يحتوي على وجبات مرتبطة بحساب سابق. هل تريد نسخ الوجبات المحلية إلى الحساب الحالي؟ لن تُنقل بيانات السحابة القديمة تلقائيًا، لكن جميع الوجبات الموجودة على هذا الجهاز قد تُرفع إلى الحساب الحالي.");
-        if (!approved) { declinedUserId = user.id; status("أوقفت المزامنة لتجنب نقل وجبات الجهاز إلى حساب آخر."); return; }
-      }
       const local = await allLocal(db);
+      if (local.length && (!previousUserId || previousUserId !== user.id)) {
+        const approved = window.confirm("قبل المزامنة: سيتم رفع جميع الوجبات المحفوظة محليًا على هذا الجهاز إلى حساب صحن الحالي. هل تريد المتابعة؟");
+        if (!approved) { declinedUserId = user.id; status("أوقفت المزامنة حتى لا تُرفع بيانات الجهاز دون موافقتك."); return; }
+      }
       for (const meal of local) {
         if (!meal.clientId) {
           meal.clientId = newClientId();
