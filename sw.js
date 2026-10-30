@@ -1,4 +1,4 @@
-const CACHE_NAME = "my-food-assistant-v5";
+const CACHE_NAME = "my-food-assistant-v6";
 const FILES = ["./", "./index.html", "./food-supabase-sync.js", "./manifest.webmanifest", "./icons/icon.svg"];
 
 self.addEventListener("install", event => {
