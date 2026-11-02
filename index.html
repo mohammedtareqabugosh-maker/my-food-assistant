@@ -288,25 +288,91 @@ $('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{co
 function shrinkImage(dataUrl,max=900){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*k));c.height=Math.max(1,Math.round(img.height*k));c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',0.8))};img.onerror=reject;img.src=dataUrl})}
 $('foodPhoto').onchange=e=>{const f=e.target.files[0];if(!f){$('photoPreview').classList.add('hidden');photoData='';return}const r=new FileReader();r.onload=async()=>{try{photoData=await shrinkImage(r.result)}catch{photoData=r.result}$('photoPreview').src=photoData;$('photoPreview').classList.remove('hidden')};r.readAsDataURL(f)};
 const FOODS=[
-{names:['توست','التوست','خبز توست','شريحة توست','توست أبيض','توست اسمر','توست أسمر'],k:265,p:8.5,c:49,f:3.2},
-{names:['حمص بالطحينة','حمص بطحينة','حمص','الحمص','مسبحة'],k:166,p:7.9,c:14.3,f:9.6},
-{names:['بيض مسلوق','بيض','البيض','بيضة'],k:155,p:12.6,c:1.1,f:10.6},
-{names:['صدر دجاج مطبوخ','صدر دجاج مشوي','دجاج مشوي','دجاج مطبوخ','صدر دجاج','دجاج'],k:165,p:31,c:0,f:3.6},
-{names:['رز مطبوخ','أرز مطبوخ','رز ابيض مطبوخ','أرز أبيض مطبوخ','رز','أرز'],k:130,p:2.7,c:28.2,f:.3},
-{names:['خبز عربي','خبز بلدي','خبز','رغيف'],k:275,p:9,c:55,f:1.5},
-{names:['زيت زيتون','زيت الزيتون','زيت'],k:884,p:0,c:0,f:100},
-{names:['خيار','الخيار'],k:15,p:.7,c:3.6,f:.1},{names:['بندورة','طماطم','البندورة'],k:18,p:.9,c:3.9,f:.2},
-{names:['موزة','موز'],k:89,p:1.1,c:22.8,f:.3},{names:['تفاحة','تفاح'],k:52,p:.3,c:13.8,f:.2},
-{names:['زبادي','لبن رائب','لبن'],k:61,p:3.5,c:4.7,f:3.3},{names:['بطاطا مسلوقة','بطاطا مشوية','بطاطا'],k:87,p:1.9,c:20.1,f:.1},
-{names:['تونة بالماء','تونة مصفاة','تونة'],k:116,p:25.5,c:0,f:.8},{names:['شوفان','الشوفان'],k:389,p:16.9,c:66.3,f:6.9},
-{names:['حليب قليل الدسم','حليب كامل الدسم','حليب'],k:61,p:3.2,c:4.8,f:3.3},{names:['جبنة قليلة الدسم','جبنة بيضاء','جبنة'],k:264,p:14,c:4,f:21},
-{names:['عدس مطبوخ','عدس'],k:116,p:9,c:20.1,f:.4}
+{names:['توست اسمر','توست أسمر','توست ابيض','توست أبيض','خبز توست','شريحة توست','توست'],k:265,p:8.5,c:49,f:3.2,portion:'toast'},
+{names:['خبز عربي اسمر','خبز عربي أسمر','خبز عربي','خبز بلدي','رغيف خبز','خبز'],k:275,p:9,c:55,f:1.5,portion:'bread'},
+{names:['بيض مسلوق','بيض مقلي','بيض عيون','بيض مخفوق','بيضة','بيض','البيض'],k:155,p:12.6,c:1.1,f:10.6,portion:'egg'},
+{names:['صدر دجاج مشوي','دجاج مشوي','دجاج مطبوخ','صدر دجاج','دجاج'],k:165,p:31,c:0,f:3.6,portion:'chicken'},
+{names:['لحم بقري مطبوخ','لحم عجل','لحم مشوي','لحم مفروم مطبوخ','لحم'],k:250,p:26,c:0,f:15,portion:'meat'},
+{names:['سمك مشوي','سمك مطبوخ','فيليه سمك','سلمون مشوي','سلمون','سمك'],k:170,p:24,c:0,f:8,portion:'fish'},
+{names:['تونة بالماء','تونة مصفاة','تونة'],k:116,p:25.5,c:0,f:.8,portion:'tuna'},
+{names:['رز ابيض مطبوخ','أرز أبيض مطبوخ','رز مطبوخ','أرز مطبوخ','رز ابيض','أرز أبيض','رز','أرز'],k:130,p:2.7,c:28.2,f:.3,portion:'rice'},
+{names:['مكرونة مطبوخة','معكرونة مطبوخة','باستا مطبوخة','مكرونة','معكرونة','باستا'],k:157,p:5.8,c:30.9,f:.9,portion:'pasta'},
+{names:['بطاطا مسلوقة','بطاطا مشوية','بطاطا مقلية','بطاطا','بطاطس'],k:87,p:1.9,c:20.1,f:.1,portion:'potato'},
+{names:['حمص بالطحينة','حمص بطحينة','حمص','مسبحة'],k:166,p:7.9,c:14.3,f:9.6,portion:'spoon'},
+{names:['فول مدمس','فول مطبوخ','فول'],k:110,p:7.6,c:18.8,f:.4,portion:'spoon'},
+{names:['عدس مطبوخ','شوربة عدس','عدس'],k:116,p:9,c:20.1,f:.4,portion:'cup'},
+{names:['فاصوليا مطبوخة','فاصوليا','لوبيا'],k:127,p:8.7,c:22.8,f:.5,portion:'cup'},
+{names:['شوفان','الشوفان'],k:389,p:16.9,c:66.3,f:6.9,portion:'oats'},
+{names:['لبنة قليلة الدسم','لبنة','لبن زبادي','زبادي يوناني','زبادي','لبن رائب','لبن'],k:61,p:3.5,c:4.7,f:3.3,portion:'cup'},
+{names:['حليب قليل الدسم','حليب كامل الدسم','حليب خالي الدسم','حليب'],k:50,p:3.4,c:5,f:1.8,portion:'milk'},
+{names:['جبنة قريش','جبنة قليلة الدسم','جبنة بيضاء','جبنة صفراء','جبنة شيدر','جبنة موزاريلا','جبنة','قشقوان'],k:264,p:14,c:4,f:21,portion:'cheese'},
+{names:['زيت زيتون','زيت الزيتون','زيت نباتي','زيت'],k:884,p:0,c:0,f:100,portion:'spoon'},
+{names:['زبدة الفول السوداني','زبدة فول سوداني','زبدة الفول','زبدة'],k:588,p:25,c:20,f:50,portion:'spoon'},
+{names:['مايونيز','كاتشب','طحينة'],k:400,p:2,c:10,f:40,portion:'spoon'},
+{names:['خيار','الخيار'],k:15,p:.7,c:3.6,f:.1,portion:'vegetable'},
+{names:['بندورة','طماطم','البندورة'],k:18,p:.9,c:3.9,f:.2,portion:'vegetable'},
+{names:['خس','جرجير','سبانخ','ملفوف','كرنب','كوسا','باذنجان','فلفل حلو','فلفل رومي','بروكلي','قرنبيط','زهرة'],k:25,p:1.5,c:4.5,f:.3,portion:'vegetable'},
+{names:['موزة','موز'],k:89,p:1.1,c:22.8,f:.3,portion:'fruit'},
+{names:['تفاحة','تفاح','التفاح'],k:52,p:.3,c:13.8,f:.2,portion:'fruit'},
+{names:['برتقالة','برتقال'],k:47,p:.9,c:11.8,f:.1,portion:'fruit'},
+{names:['عنب','العنب'],k:69,p:.7,c:18.1,f:.2,portion:'fruit'},
+{names:['فراولة','فريز'],k:32,p:.7,c:7.7,f:.3,portion:'fruit'},
+{names:['تمر','تمرة','التمر'],k:282,p:2.5,c:75,f:.4,portion:'date'},
+{names:['مانجا','مانجو'],k:60,p:.8,c:15,f:.4,portion:'fruit'},
+{names:['افوكادو','أفوكادو'],k:160,p:2,c:8.5,f:14.7,portion:'fruit'},
+{names:['مكسرات مشكلة','مكسرات','لوز','جوز','كاجو','فستق','فول سوداني'],k:607,p:20,c:21,f:54,portion:'nuts'},
+{names:['بسكويت شاي','بسكويت','كوكيز','كعك'],k:450,p:6,c:70,f:16,portion:'piece'},
+{names:['شوكولاتة داكنة','شوكولاتة بالحليب','شوكولاتة'],k:535,p:7,c:59,f:30,portion:'piece'},
+{names:['كيك شوكولاتة','كيكة','كيك'],k:350,p:5,c:50,f:15,portion:'piece'},
+{names:['بيتزا'],k:266,p:11,c:33,f:10,portion:'piece'},
+{names:['شاورما دجاج','شاورما لحم','شاورما'],k:230,p:14,c:22,f:10,portion:'sandwich'},
+{names:['فلافل','حبة فلافل'],k:333,p:13,c:32,f:18,portion:'falafel'},
+{names:['برغر لحم','برجر لحم','برغر دجاج','برجر دجاج','برغر','برجر'],k:250,p:15,c:25,f:11,portion:'sandwich'},
+{names:['ساندويش','سندويش','سندويشة','ساندويتش'],k:250,p:10,c:30,f:9,portion:'sandwich'},
+{names:['شوربة خضار','شوربة دجاج','شوربة'],k:50,p:3,c:7,f:1.5,portion:'cup'},
+{names:['عصير برتقال','عصير تفاح','عصير طبيعي','عصير'],k:45,p:.7,c:10.4,f:.2,portion:'cup'},
+{names:['قهوة سادة','قهوة عربية','قهوة','شاي بدون سكر','شاي'],k:2,p:0,c:0,f:0,portion:'cup'},
+{names:['سكر','سكر أبيض'],k:387,p:0,c:100,f:0,portion:'spoon'},
+{names:['عسل','مربى'],k:304,p:.3,c:82,f:0,portion:'spoon'},
+{names:['أرز بالحليب','رز بحليب','مهلبية'],k:120,p:3,c:20,f:3,portion:'cup'},
+{names:['مقلوبة','منسف','مندي','كبسة','برياني','مجدرة','فتوش','تبولة','سلطة'],k:160,p:6,c:20,f:6,portion:'plate'},
+{names:['شيبس','شيبسي','رقائق بطاطا'],k:536,p:7,c:53,f:34,portion:'piece'},
+{names:['ماء','مي'],k:0,p:0,c:0,f:0,portion:'cup'}
 ];
 function norm(s){return String(s||'').toLowerCase().replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[ًٌٍَُِّْـ]/g,'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/\s+/g,' ').trim()}
 const r1=n=>Math.round((Number(n)||0)*10)/10;
 function matchFood(piece){const t=norm(piece);let best=null;for(const food of FOODS)for(const alias of food.names){const a=norm(alias);if(a&&t.includes(a)&&(!best||a.length>best.a.length))best={food,a};}return best}
-function parseGrams(piece,food){const t=norm(piece);const names=food.names.map(norm);const isToast=names.some(n=>n.includes('توست'));const isHummus=names.some(n=>n.includes('حمص')||n.includes('مسبحه'));const isEgg=names.some(n=>n.includes('بيض'));let m=t.match(/(\d+(?:[.,]\d+)?)\s*(?:غرام|جرام|غ|جم|g|grams?)(?![a-z])/i);if(m){let grams=Number(m[1].replace(',','.'));if(/شريحتين/.test(t)&&/لكل شريحه/.test(t))grams*=2;return grams;}m=t.match(/(\d+(?:[.,]\d+)?)\s*(?:مل|ml)(?![a-z])/i);if(m)return Number(m[1].replace(',','.'));if(isToast){if(/ثلاث شرائح|ثلاث شرايح/.test(t))return 90;if(/شريحتين|شريحتا/.test(t))return 60;if(/شريحة|شريحه/.test(t))return 30;}if(isHummus){if(/ثلاث ملاعق|ثلاث معالق|ثلاث ملعق/.test(t))return 45;if(/ملعقتين|معلقتين|ملعقتا/.test(t))return 30;if(/ملعق/.test(t))return 15;}if(isEgg){if(/بيضتين|بيضتان/.test(t))return 100;if(/ثلاث بيضات/.test(t))return 150;if(/بيضة واحدة|بيضه واحده|بيضة|بيضه/.test(t))return 50;}return null}
-function localCalc(text){const pieces=String(text).split(/[,،؛+\n]|\s*و\s*(?=(?:ملعق|شريح|قطعة|رغيف|حبة|كوب|كأس|بيض))/).map(x=>x.trim()).filter(Boolean);if(!pieces.length)return null;const items=[],unknown=[];for(const piece of pieces){const hit=matchFood(piece);if(!hit){unknown.push(piece);continue}const grams=parseGrams(piece,hit.food);if(!grams||grams<=0){unknown.push(piece);continue}const q=grams/100;items.push({name:piece,grams,kcal:Math.round(hit.food.k*q),protein:r1(hit.food.p*q),carbs:r1(hit.food.c*q),fat:r1(hit.food.f*q)})}if(!items.length)return null;const totals=items.reduce((s,x)=>({kcal:s.kcal+x.kcal,protein:s.protein+x.protein,carbs:s.carbs+x.carbs,fat:s.fat+x.fat}),{kcal:0,protein:0,carbs:0,fat:0});return {items,unknown,totals:{calories:Math.round(totals.kcal),protein:r1(totals.protein),carbs:r1(totals.carbs),fat:r1(totals.fat)}}}
+function parseGrams(piece,food){
+ const t=norm(piece),portion=food.portion||'';
+ const names=food.names.map(norm),isToast=portion==='toast',isBread=portion==='bread',isEgg=portion==='egg';
+ let m=t.match(/(\\d+(?:[.,]\\d+)?)\\s*(?:غرام|جرام|غ|جم|g|grams?)(?![a-z])/i);
+ if(m)return Number(m[1].replace(',','.'));
+ m=t.match(/(\\d+(?:[.,]\\d+)?)\\s*(?:مل|ml)(?![a-z])/i);if(m)return Number(m[1].replace(',','.'));
+ if(isToast){if(/ثلاث شرائح|ثلاث شرايح/.test(t))return 90;if(/شريحتين|شريحتا/.test(t))return 60;if(/شريحة|شريحه/.test(t))return 30;}
+ if(isBread){if(/رغيفين|رغيفان/.test(t))return 120;if(/نصف رغيف|نص رغيف/.test(t))return 30;if(/رغيف/.test(t))return 60;}
+ if(isEgg){if(/ثلاث بيضات|ثلاث بيض/.test(t))return 150;if(/بيضتين|بيضتان/.test(t))return 100;if(/بيضة واحدة|بيضه واحده|بيضة|بيضه/.test(t))return 50;if(/بيض/.test(t)&&/2|اثنين|ثنتين|حبتين/.test(t))return 100;}
+ if(/ملعقة صغيرة|معلقة صغيرة|ملعقه صغيره|معلقه صغيره/.test(t)&&portion==='spoon')return 5;
+ if(/ملعقتين|معلقتين|ملعقتا|معلقتا/.test(t)&&portion==='spoon')return 30;
+ if(/ثلاث ملاعق|ثلاث معالق|ثلاث ملعق/.test(t)&&portion==='spoon')return 45;
+ if(/ملعق/.test(t)&&portion==='spoon')return 15;
+ if(/كوبين|كوبان/.test(t))return portion==='spoon'?null:480;
+ if(/نصف كوب|نص كوب/.test(t))return portion==='rice'?80:portion==='oats'?40:portion==='cup'||portion==='milk'?120:100;
+ if(/كوب|كأس/.test(t)){if(portion==='rice')return 158;if(portion==='oats')return 80;if(portion==='milk'||portion==='cup')return 240;return 200;}
+ if(portion==='fruit'||portion==='date'||portion==='piece'||portion==='falafel'){
+  if(/حبتين|حبتا|اثنتين|ثنتين|تمرتين/.test(t))return portion==='date'?16:portion==='fruit'?300:portion==='falafel'?60:40;
+  if(/ثلاث حبات|ثلاث تمرات/.test(t))return portion==='date'?24:portion==='falafel'?90:450;
+  if(/حبة|حبه|واحدة|واحده|تمرة|قطعة|قطعه/.test(t))return portion==='date'?8:portion==='fruit'?150:portion==='falafel'?30:30;
+ }
+ if(portion==='chicken'||portion==='meat'||portion==='fish'||portion==='tuna'){if(/ربع كيلو/.test(t))return 250;if(/نصف كيلو|نص كيلو/.test(t))return 500;if(/كيلو/.test(t))return 1000;if(/قطعتين|قطعتا/.test(t))return 200;if(/قطعة|قطعه/.test(t))return 100;}
+ if(portion==='cheese'){if(/شريحتين|شريحتا/.test(t))return 40;if(/شريحة|شريحه/.test(t))return 20;}
+ if(portion==='sandwich'){if(/وجبة|صحن/.test(t))return 350;if(/صغير/.test(t))return 180;if(/كبير/.test(t))return 300;return 220;}
+ if(portion==='rice'||portion==='pasta'||portion==='cup'||portion==='oats'){if(/صحن|طبق/.test(t))return 250;}
+ if(portion==='vegetable'){if(/حبتين|حبتا/.test(t))return 200;if(/حبة|حبه/.test(t))return 100;}
+ if(portion==='nuts'&&/قبضة|حفنة/.test(t))return 30;
+ if(portion==='plate'&&/صحن|طبق|وجبة/.test(t))return 350;
+ return null;
+}
+function localCalc(text){const pieces=String(text).split(/[,،؛+\n]|\s*و\s*(?=(?:ملعق|شريح|قطعة|رغيف|حبة|كوب|كأس|بيض|تفاح|موز|دجاج|رز|أرز|خيار|طماطم|بندورة|زيت|خبز|جبن|لبن|زبادي|فلافل|تمر|شاورما|لحم|سمك|بطاطا|مكرونة|معكرونة|شوفان|مكسرات))/).map(x=>x.trim()).filter(Boolean);if(!pieces.length)return null;const items=[],unknown=[];for(const piece of pieces){const hit=matchFood(piece);if(!hit){unknown.push(piece);continue}const grams=parseGrams(piece,hit.food);if(!grams||grams<=0){unknown.push(piece);continue}const q=grams/100;items.push({name:piece,grams,kcal:Math.round(hit.food.k*q),protein:r1(hit.food.p*q),carbs:r1(hit.food.c*q),fat:r1(hit.food.f*q)})}if(!items.length)return null;const totals=items.reduce((s,x)=>({kcal:s.kcal+x.kcal,protein:s.protein+x.protein,carbs:s.carbs+x.carbs,fat:s.fat+x.fat}),{kcal:0,protein:0,carbs:0,fat:0});return {items,unknown,totals:{calories:Math.round(totals.kcal),protein:r1(totals.protein),carbs:r1(totals.carbs),fat:r1(totals.fat)}}}
 function setMessage(s){$('assistantOutput').textContent=s}
 $('prepareAnalysis').onclick=async()=>{const desc=$('foodDescription').value.trim();if(!desc)return alert('اكتب مكونات الوجبة أو سؤالك أولًا.');const b=$('prepareAnalysis');b.disabled=true;b.textContent='جاري التحليل…';$('assistantActions').classList.add('hidden');suggestion=null;try{const local=localCalc(desc);if(local){suggestion={description:desc,name:desc,calories:local.totals.calories,protein:local.totals.protein,carbs:local.totals.carbs,fat:local.totals.fat,unverified:false};const lines=local.items.map(x=>`• ${x.name}: ${x.kcal} سعرة، بروتين ${x.protein} غ`).join('\n');setMessage(`تم الحساب محليًا للأطعمة التي تم التعرف عليها.\n\nتفصيل المكونات:\n${lines}\n\nالإجمالي: ${suggestion.calories} سعرة\nالبروتين: ${suggestion.protein} غ\nالكربوهيدرات: ${suggestion.carbs} غ\nالدهون: ${suggestion.fat} غ${local.unknown.length?'\n\nلم تُحسب هذه المكونات لعدم وضوح الطعام أو الوزن: '+local.unknown.join('، '):''}\n\nالقيم تقريبية. لم يتم حفظ أي شيء.`);$('assistantActions').classList.remove('hidden');return}
 const meals=(await allMeals()).filter(m=>dayOf(m.date)===today()).map(m=>({name:m.name,calories:Number(m.calories)||0,protein:Number(m.protein)||0,carbs:Number(m.carbs)||0,fat:Number(m.fat)||0}));
