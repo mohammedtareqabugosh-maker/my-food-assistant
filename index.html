@@ -368,6 +368,10 @@ function parseGrams(piece,food){
  if(portion==='sandwich'){if(/وجبة|صحن/.test(t))return 350;if(/صغير/.test(t))return 180;if(/كبير/.test(t))return 300;return 220;}
  if(portion==='rice'||portion==='pasta'||portion==='cup'||portion==='oats'){if(/صحن|طبق/.test(t))return 250;}
  if(portion==='vegetable'){if(/حبتين|حبتا/.test(t))return 200;if(/حبة|حبه/.test(t))return 100;}
+ if(portion==='fruit'&&/(موزه|تفاحه|برتقاله|مانجا|مانجو|افوكادو|عنب|فراوله|فريز)/.test(t))return 150;
+ if(portion==='date'&&/تمره/.test(t))return 8;
+ if(portion==='vegetable')return 100;
+ if(portion==='milk')return 240;
  if(portion==='nuts'&&/قبضة|حفنة/.test(t))return 30;
  if(portion==='plate'&&/صحن|طبق|وجبة/.test(t))return 350;
  return null;
