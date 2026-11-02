@@ -74,7 +74,8 @@ function normalizeItems(list) {
   }).filter(item => item.name);
 }
 
-// Vision path: the photo is sent as a byte array to the vision model.
+// Vision path: Llama 3.2 Vision takes a plain `prompt` plus the image bytes.
+// It does not accept the chat `messages` format, which made every photo request fail.
 async function describeWithVision(env, prompt, dataUrl) {
   const m = /^data:image\/(?:png|jpeg|jpg|webp);base64,(.+)$/i.exec(dataUrl);
   if (!m) throw new Error("صيغة الصورة غير مدعومة");
@@ -82,10 +83,7 @@ async function describeWithVision(env, prompt, dataUrl) {
   const bytes = new Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return env.AI.run(VISION_MODEL, {
-    messages: [
-      { role: "system", content: "أنت مساعد غذائي. أعد JSON صالحًا فقط." },
-      { role: "user", content: prompt + "\n\nالصورة مرفقة مع الطلب: حدّد الأكلة الظاهرة وكميتها التقريبية، واذكر في الافتراضات أن التقدير من الصورة." },
-    ],
+    prompt: "أنت مساعد غذائي. أعد JSON صالحًا فقط.\n\n" + prompt + "\n\nالصورة مرفقة مع الطلب: حدّد الأكلة الظاهرة وكميتها التقريبية، واذكر في الافتراضات أن التقدير من الصورة.",
     image: bytes,
     max_tokens: 1200,
     temperature: 0.3,
