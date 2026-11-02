@@ -374,6 +374,21 @@ function parseGrams(piece,food){
  if(portion==='milk')return 240;
  if(portion==='nuts'&&/قبضة|حفنة/.test(t))return 30;
  if(portion==='plate'&&/صحن|طبق|وجبة/.test(t))return 350;
+ if(portion==='bread')return 60;
+ if(portion==='fruit')return 150;
+ if(portion==='date')return 8;
+ if(portion==='vegetable')return 100;
+ if(portion==='nuts')return 30;
+ if(portion==='cheese')return 30;
+ if(portion==='sandwich')return 220;
+ if(portion==='plate')return 300;
+ if(portion==='potato')return 150;
+ if(portion==='fish'||portion==='meat'||portion==='chicken'||portion==='tuna')return 100;
+ if(portion==='rice'||portion==='pasta'||portion==='oats')return 100;
+ if(portion==='cup')return 240;
+ if(portion==='spoon')return 15;
+ if(portion==='piece')return 30;
+ if(portion==='falafel')return 30;
  return null;
 }
 function localCalc(text){const pieces=String(text).split(/[,،؛+\n]|\s*(?:و|مع)\s*(?=(?:ملعق|شريح|قطعة|رغيف|حبة|كوب|كأس|بيض|تفاح|موز|دجاج|رز|أرز|خيار|طماطم|بندورة|زيت|خبز|جبن|لبن|زبادي|فلافل|تمر|شاورما|لحم|سمك|بطاطا|مكرونة|معكرونة|شوفان|مكسرات|حليب|قهوة|موزه|موز|تفاحه|تفاح|برتقاله|برتقال|عنب|فراوله|فريز|افوكادو|مانجا|مانجو|بندورة|طماطم|خس|جرجير|خيار|سلطة|شاي|فول|عدس|سلطة|منسف|مقلوبة))/).map(x=>x.trim()).filter(Boolean);if(!pieces.length)return null;const items=[],unknown=[];for(const piece of pieces){const hit=matchFood(piece);if(!hit){unknown.push(piece);continue}const grams=parseGrams(piece,hit.food);if(!grams||grams<=0){unknown.push(piece);continue}const q=grams/100;items.push({name:piece,grams,kcal:Math.round(hit.food.k*q),protein:r1(hit.food.p*q),carbs:r1(hit.food.c*q),fat:r1(hit.food.f*q)})}if(!items.length)return null;const totals=items.reduce((s,x)=>({kcal:s.kcal+x.kcal,protein:s.protein+x.protein,carbs:s.carbs+x.carbs,fat:s.fat+x.fat}),{kcal:0,protein:0,carbs:0,fat:0});return {items,unknown,totals:{calories:Math.round(totals.kcal),protein:r1(totals.protein),carbs:r1(totals.carbs),fat:r1(totals.fat)}}}
