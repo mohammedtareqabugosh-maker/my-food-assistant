@@ -88,6 +88,12 @@ button,input,select,textarea{font:inherit;color:inherit}button,a{-webkit-tap-hig
 .an-row .an-conf{grid-column:1/-1;color:var(--muted);font-size:11px}.an-row .an-del{grid-column:1/-1;justify-self:start}
 .an-add{margin-top:4px}.an-totals{font-weight:800;margin:12px 0 6px;line-height:1.8;overflow-wrap:anywhere}
 .assist-actions{display:block;margin-top:12px}.assist-actions .field{margin-bottom:10px}
+
+/* ChatGPT meal handoff: staged import only; never save automatically. */
+.sahn-import-notice{display:flex;align-items:flex-start;gap:12px;padding:15px 17px;margin:0 0 16px;border:1px solid var(--accent-border);border-radius:18px;background:var(--accent-soft);color:var(--ink)}
+.sahn-import-notice strong{display:block;font-weight:900;margin-bottom:3px}
+.sahn-import-notice p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
+.sahn-import-notice button{margin-inline-start:auto;flex:0 0 auto;border:0;border-radius:10px;background:transparent;color:var(--muted);font-weight:900;padding:4px 8px}
 </style>
 </head>
 <body><main class="app">
@@ -543,7 +549,32 @@ document.addEventListener('click',e=>{
  $('mealDate').value=d+'T12:00';
 });
 
-async function init(){try{db=await openDB();settings={...settings,...(await getSetting('goals')||{})};$('datePill').textContent=new Intl.DateTimeFormat('ar-JO',{weekday:'short',day:'numeric',month:'short'}).format(new Date());$('historyDate').value=today();await refresh();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{})}catch(e){alert('تعذر تهيئة قاعدة البيانات. افتح التطبيق من رابط GitHub Pages في Safari وحاول مجددًا.')}}
+function importMealFromAssistant(){
+ const params=new URLSearchParams(location.search);
+ if(params.get('sahn_add')!=='1')return;
+ const name=(params.get('name')||'').trim().slice(0,120);
+ const type=params.get('type')||'وجبة خفيفة';
+ const allowed=['الفطور','الغداء','العشاء','وجبة خفيفة','مشروب'];
+ const number=(key,max)=>{const raw=params.get(key);if(raw===null||raw==='')return 0;const n=Number(raw);return Number.isFinite(n)&&n>=0&&n<=max?n:null};
+ const calories=number('calories',100000),protein=number('protein',10000),carbs=number('carbs',10000),fat=number('fat',10000);
+ const cleanDate=params.get('date')||new Date().toISOString();
+ const parsedDate=new Date(cleanDate);
+ const valid=!!name&&allowed.includes(type)&&calories!==null&&protein!==null&&carbs!==null&&fat!==null&&Number.isFinite(parsedDate.getTime());
+ const cleanUrl=new URL(location.href);
+ ['sahn_add','name','type','calories','protein','carbs','fat','ingredients','date','notes'].forEach(k=>cleanUrl.searchParams.delete(k));
+ try{history.replaceState(null,'',cleanUrl.pathname+cleanUrl.search+cleanUrl.hash)}catch(e){console.warn('Could not clear meal handoff URL',e)}
+ if(!valid){alert('رابط الوجبة غير مكتمل أو يحتوي على بيانات غير صالحة. لم يتم تسجيل أي شيء.');return}
+ const localDate=new Date(parsedDate.getTime()-parsedDate.getTimezoneOffset()*60000).toISOString().slice(0,16);
+ $('mealName').value=name;$('mealType').value=type;$('mealDate').value=localDate;
+ $('ingredients').value=(params.get('ingredients')||'').slice(0,2000);
+ $('kcal').value=Math.round(calories);$('protein').value=protein;$('carbs').value=carbs;$('fat').value=fat;
+ $('notes').value=(params.get('notes')||'').slice(0,500);
+ editingId=null;$('saveMeal').textContent='تأكيد تسجيل الوجبة';
+ let notice=document.getElementById('sahnAssistantImportNotice');
+ if(!notice){notice=document.createElement('div');notice.id='sahnAssistantImportNotice';notice.className='sahn-import-notice';notice.innerHTML='<div aria-hidden="true">✓</div><div><strong>وجبة مرسلة من ChatGPT</strong><p>راجع الاسم والكمية والقيم الغذائية، ثم اضغط «تأكيد تسجيل الوجبة» لحفظها. لم تُحفظ الوجبة بعد.</p></div><button type="button" aria-label="إغلاق التنبيه">×</button>';const form=$('mealForm');form.parentNode.insertBefore(notice,form);notice.querySelector('button').onclick=()=>notice.remove()}
+ showSection('add');
+}
+async function init(){try{db=await openDB();settings={...settings,...(await getSetting('goals')||{})};$('datePill').textContent=new Intl.DateTimeFormat('ar-JO',{weekday:'short',day:'numeric',month:'short'}).format(new Date());$('historyDate').value=today();await refresh();importMealFromAssistant();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{})}catch(e){alert('تعذر تهيئة قاعدة البيانات. افتح التطبيق من رابط GitHub Pages في Safari وحاول مجددًا.')}}
 init();
 })();
 </script>
